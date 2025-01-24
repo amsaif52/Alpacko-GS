@@ -44,11 +44,11 @@ function createQrCodes() {
   );
   const lastRow = sheet.getLastRow();
 
-  // Retrieve all values in the idColumn and qrCodeUrlColumn at once
+  // Retrieve all values in the poNumberColumn and qrCodeUrlColumn at once
   const idValues = sheet
-    .getRange(2, columnNumberGetter("idColumn"), lastRow - 1)
+    .getRange(2, columnNumberGetter("poNumberColumn"), lastRow - 1)
     .getValues();
-    console.log('id column ', columnNumberGetter("idColumn"))
+    console.log('id column ', columnNumberGetter("poNumberColumn"))
     console.log('idValues ', idValues)
   const qrCodeUrlValues = sheet
     .getRange(2, columnNumberGetter("qrCodeUrlColumn"), lastRow - 1)
@@ -66,7 +66,7 @@ function createQrCodes() {
       const qrCode = generateQRCode(code);
       const row = i + 1;
       // Set the UUID and QR code in the respective columns
-      sheet.getRange(row+1, columnNumberGetter("idColumn")).setValue(code); // Set uuid Code in Column
+      sheet.getRange(row+1, columnNumberGetter("poNumberColumn")).setValue(code); // Set uuid Code in Column
       sheet.getRange(row+1, columnNumberGetter("qrCodeUrlColumn")).setValue(qrCode); // Set QR Code in Column
     }
   }
@@ -129,7 +129,7 @@ function updateCellValueById(id, newValue) {
   const sheet = spreadsheet.getSheetByName(Config.mainSheet);
   const lastRow = sheet.getLastRow();
 
-  const columnRange = sheet.getRange(1, columnNumberGetter("idColumn"), lastRow);
+  const columnRange = sheet.getRange(1, columnNumberGetter("poNumberColumn"), lastRow);
   const columnValues = columnRange.getValues();
 
   for (let i = 1; i < columnValues.length; i++) {
@@ -154,7 +154,7 @@ const searchPrimarySheet = (url) => {
   );
   const data = sheet.getDataRange().getValues();
   console.log('data ', data)
-  const columnIndex = columnNumberGetter("idColumn")-1;
+  const columnIndex = columnNumberGetter("poNumberColumn")-1;
   // const db = new Database('Transaction');
   // return db.getLatestById(id); // This is for relational db style saving
   for (let i = 1; i < data.length; i++) {
@@ -163,7 +163,7 @@ const searchPrimarySheet = (url) => {
     if (data[i][columnIndex] === url) {
       // Return a simplified array or object
       return [
-        data[i][columnNumberGetter("idColumn")-1],
+        data[i][columnNumberGetter("poNumberColumn")-1],
         data[i][columnNumberGetter("quantityColumn")-1],
         data[i][columnNumberGetter("updatedAtColumn")-1] ? new Date(data[i][columnNumberGetter("updatedAtColumn")-1]).toLocaleDateString() : "N/A",
       ];
@@ -183,7 +183,7 @@ const searchSheetForUrlActivate = (qrData) => {
       // TODO make this a config
       // Currently returns batch id, quantity, last updateat
       return [
-        data[i][columnNumberGetter("idColumn")-1],
+        data[i][columnNumberGetter("poNumberColumn")-1],
         data[i][columnNumberGetter("quantityColumn")-1],
         data[i][columnNumberGetter("updatedAtColumn")-1] ? new Date( data[i][columnNumberGetter("updatedAtColumn")-1]).toLocaleDateString() : "N/A",
       ];
@@ -226,7 +226,7 @@ function checkDuplicates() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
     Config.mainSheet,
   );
-  const columnLetter = columnScriptPropertyGetter("idColumn");
+  const columnLetter = columnScriptPropertyGetter("poNumberColumn");
   const column = sheet
     .getRange(`${columnLetter}2:${columnLetter}${sheet.getLastRow()}`)
     .getValues();
@@ -240,13 +240,13 @@ function checkDuplicates() {
     if (value === "") return; // Skip blank rows
 
     // Check for spaces
-    if (value.includes(" ")) {
+    /*if (value.includes(" ")) {
       if (spacesFound.has(value)) {
         spacesFound.get(value).push(rowIndex);
       } else {
         spacesFound.set(value, [rowIndex]);
       }
-    }
+    }*/
 
     // Check for duplicates
     if (uniqueValues.has(value)) {
@@ -336,10 +336,17 @@ function areAllPropertiesFilled() {
 
   // List of required property keys
   const requiredProperties = [
-    "quantityColumn",
-    "idColumn",
+    "poNumberColumn",
     "nameColumn",
     "qrCodeUrlColumn",
+    "etcNumberConfirmationColumn",
+    "recQtyColumn",
+    "inventoryColumn",
+    "printColumn",
+    "cutColumn",
+    "glueColumn",
+    "damageColumn",
+    "skidNumberColumn",
     "updatedAtColumn",
   ];
 

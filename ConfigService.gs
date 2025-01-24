@@ -1,11 +1,18 @@
 function saveColumnSettings(settings) {
   const scriptProperties = PropertiesService.getScriptProperties();
   scriptProperties.setProperties({
-    quantityColumn: settings.quantityColumn.trim(),
-    idColumn: settings.idColumn.trim(),
-    nameColumn: settings.nameColumn.trim(),
-    qrCodeUrlColumn: settings.qrCodeUrlColumn.trim(),
-    updatedAtColumn: settings.updatedAtColumn.trim(),
+    poNumberColumn : settings.poNumberColumn.trim(),
+    nameColumn : settings.nameColumn.trim(),
+    qrCodeUrlColumn : settings.qrCodeUrlColumn.trim(),
+    etcNumberConfirmationColumn : settings.etcNumberConfirmationColumn.trim(),
+    recQtyColumn : settings.recQtyColumn.trim(),
+    inventoryColumn : settings.inventoryColumn.trim(),
+    printColumn : settings.printColumn.trim(),
+    cutColumn : settings.cutColumn.trim(),
+    glueColumn : settings.glueColumn.trim(),
+    damageColumn : settings.damageColumn.trim(),
+    skidNumberColumn : settings.skidNumberColumn.trim(),
+    updatedAtColumn : settings.updatedAtColumn.trim(),
   });
 }
 
@@ -35,11 +42,18 @@ function getConfiguration() {
   // However, it's a good practice to explicitly construct your configuration object
   // This ensures only the expected properties are included and allows for default values
   const configData = {
-    quantityColumn: scriptProperties.quantityColumn || "", // Default to 'A' if not set
-    idColumn: scriptProperties.idColumn || "",
-    nameColumn: scriptProperties.nameColumn || "",
-    qrCodeUrlColumn: scriptProperties.qrCodeUrlColumn || "",
-    updatedAtColumn: scriptProperties.updatedAtColumn || "",
+    poNumberColumn : scriptProperties.poNumberColumn || "",
+    nameColumn : scriptProperties.nameColumn || "",
+    qrCodeUrlColumn : scriptProperties.qrCodeUrlColumn || "",
+    etcNumberConfirmationColumn : scriptProperties.etcNumberConfirmationColumn || "",
+    recQtyColumn : scriptProperties.recQtyColumn || "",
+    inventoryColumn : scriptProperties.inventoryColumn || "",
+    printColumn : scriptProperties.printColumn || "",
+    cutColumn : scriptProperties.cutColumn || "",
+    glueColumn : scriptProperties.glueColumn || "",
+    damageColumn : scriptProperties.damageColumn || "",
+    skidNumberColumn : scriptProperties.skidNumberColumn || "",
+    updatedAtColumn : scriptProperties.updatedAtColumn || "",
   };
 
   return configData;

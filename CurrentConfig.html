@@ -1,47 +1,27 @@
-<!-- Stylesheet.html -->
-<style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      font-size: 16px; /* Increase base font size */
-    }
-    .form-group {
-      margin-bottom: 15px;
-    }
-    label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
-    input[type="text"] {
-      width: calc(100% - 22px);
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 14px; /* Specific font size for input fields for better readability */
-    }
-    button {
-      background-color: #4caf50;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px; /* Larger font size for buttons */
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-    h2 {
-      color: #333;
-      font-size: 20px; /* Larger font size for headings */
-    }
-    p {
-      margin: 10px 0;
-      font-size: 16px; /* Increased font size for paragraph text */
-    }
-    strong {
-      font-size: inherit; /* Ensures strong tags inherit the parent font size */
-    }
-  </style>
-  
+<!doctype html>
+<html>
+  <head>
+    <base target="_top" />
+  </head>
+  <body>
+    <!-- CurrentConfig.html -->
+    <?!= include('ConfigStyle.html'); ?>
+    <div>
+      <h2>Current Configuration</h2>
+      <p><strong>Primary Sheet:</strong> <?= primarySheet ?></p>
+      <p><strong>PO# Column:</strong> <?= poNumberColumn ?></p>
+      <p><strong>Name Column:</strong> <?= nameColumn ?></p>
+      <p><strong>QR Code URL Column:</strong> <?= qrCodeUrlColumn ?></p>
+      <p><strong>Etc# Confirmation Column:</strong> <?= etcNumberConfirmationColumn ?></p>
+      <p><strong>Rec. Qty Column:</strong> <?= recQtyColumn ?></p>
+      <p><strong>Inventory Column:</strong> <?= inventoryColumn ?></p>
+      <p><strong>Print Column:</strong> <?= printColumn ?></p>
+      <p><strong>Cut Column:</strong> <?= cutColumn ?></p>
+      <p><strong>Glue Column:</strong> <?= glueColumn ?></p>
+      <p><strong>Damage Column:</strong> <?= damageColumn ?></p>
+      <p><strong>Skid# Column:</strong> <?= skidNumberColumn ?></p>
+      <p><strong>Updated At Column:</strong> <?= updatedAtColumn ?></p>
+      <button onclick="google.script.host.close()">Close</button>
+    </div>
+  </body>
+</html>
