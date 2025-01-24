@@ -116,7 +116,7 @@ function addTransaction(rowData, newValue) {
   const updatedAt = new Date();
   // Create a row
   // [id, value, date, type]
-  db.create(id, oldValue || 0, newValue, updatedAt);
+  db.create(id, oldValue || 0, JSON.stringify(newValue), updatedAt);
 
   // Update the primary data sheet
   updateCellValueById(id, newValue);
@@ -135,9 +135,17 @@ function updateCellValueById(id, newValue) {
   for (let i = 1; i < columnValues.length; i++) {
     if (columnValues[i][0] === id) {
       const rowToUpdate = i + 1;
+      console.log(sheet
+        .getRange(rowToUpdate, columnNumberGetter("printColumn")))
       sheet
-        .getRange(rowToUpdate, columnNumberGetter("quantityColumn"))
-        .setValue(newValue);
+        .getRange(rowToUpdate, columnNumberGetter("printColumn"))
+        .setValue(newValue?.printCheck ? 1 : 0);
+      sheet
+        .getRange(rowToUpdate, columnNumberGetter("cutColumn"))
+        .setValue(newValue?.cutCheck ? 1 : 0);
+      sheet
+        .getRange(rowToUpdate, columnNumberGetter("glueColumn"))
+        .setValue(newValue?.glueCheck ? 1 : 0);
       sheet
         .getRange(rowToUpdate, columnNumberGetter("updatedAtColumn"))
         .setValue(new Date());
@@ -164,7 +172,14 @@ const searchPrimarySheet = (url) => {
       // Return a simplified array or object
       return [
         data[i][columnNumberGetter("poNumberColumn")-1],
-        data[i][columnNumberGetter("quantityColumn")-1],
+        data[i][columnNumberGetter("nameColumn")-1],
+        data[i][columnNumberGetter("etcNumberConfirmationColumn")-1],
+        data[i][columnNumberGetter("recQtyColumn")-1],
+        data[i][columnNumberGetter("inventoryColumn")-1],
+        data[i][columnNumberGetter("printColumn")-1],
+        data[i][columnNumberGetter("cutColumn")-1],
+        data[i][columnNumberGetter("glueColumn")-1],
+        data[i][columnNumberGetter("skidNumberColumn")-1],
         data[i][columnNumberGetter("updatedAtColumn")-1] ? new Date(data[i][columnNumberGetter("updatedAtColumn")-1]).toLocaleDateString() : "N/A",
       ];
     }
@@ -184,7 +199,7 @@ const searchSheetForUrlActivate = (qrData) => {
       // Currently returns batch id, quantity, last updateat
       return [
         data[i][columnNumberGetter("poNumberColumn")-1],
-        data[i][columnNumberGetter("quantityColumn")-1],
+        data[i][columnNumberGetter("recQtyColumn")-1],
         data[i][columnNumberGetter("updatedAtColumn")-1] ? new Date( data[i][columnNumberGetter("updatedAtColumn")-1]).toLocaleDateString() : "N/A",
       ];
     }

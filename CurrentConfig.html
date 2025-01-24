@@ -1,3 +1,38 @@
+<!-- 
+  DESCRIPTION: This HTML file displays the current configuration settings for a specific application. 
+  It includes various configuration parameters such as primary sheet, PO number column, name column, 
+  QR code URL column, and other related columns. The file also includes a button to close the window.
+
+  INCLUDES:
+  - ConfigStyle.html: External HTML file for styling.
+
+  VARIABLES:
+  - primarySheet: The primary sheet name.
+  - poNumberColumn: The column for PO numbers.
+  - nameColumn: The column for names.
+  - qrCodeUrlColumn: The column for QR code URLs.
+  - etcColumn: The column for miscellaneous data.
+  - expectedQtyColumn: The column for expected quantities.
+  - arrivalDateColumn: The column for arrival dates.
+  - customerColumn: The column for customer names.
+  - lengthColumn: The column for lengths.
+  - breadthColumn: The column for breadths.
+  - heightColumn: The column for heights.
+  - sheetWidthColumn: The column for sheet widths.
+  - sheetHeightColumn: The column for sheet heights.
+  - customerPoColumn: The column for customer PO numbers.
+  - deliveryDateColumn: The column for delivery dates.
+  - etcNumberConfirmationColumn: The column for ETC number confirmations.
+  - recQtyColumn: The column for received quantities.
+  - inventoryColumn: The column for inventory data.
+  - totalInventoryColumn: The column for total inventory.
+  - printColumn: The column for print data.
+  - cutColumn: The column for cut data.
+  - glueColumn: The column for glue data.
+  - damageColumn: The column for damage data.
+  - skidNumberColumn: The column for skid numbers.
+  - updatedAtColumn: The column for the last update timestamp.
+-->
 <!doctype html>
 <html>
   <head>
@@ -11,10 +46,22 @@
       <p><strong>Primary Sheet:</strong> <?= primarySheet ?></p>
       <p><strong>PO# Column:</strong> <?= poNumberColumn ?></p>
       <p><strong>Name Column:</strong> <?= nameColumn ?></p>
-      <p><strong>QR Code URL Column:</strong> <?= qrCodeUrlColumn ?></p>
+      <p><strong>Qr Code Url Column:</strong> <?= qrCodeUrlColumn ?></p>
+      <p><strong>Etc Column:</strong> <?= etcColumn ?></p>
+      <p><strong>Expected Qty Column:</strong> <?= expectedQtyColumn ?></p>
+      <p><strong>Arrival Date Column:</strong> <?= arrivalDateColumn ?></p>
+      <p><strong>Csutomer Column:</strong> <?= customerColumn ?></p>
+      <p><strong>Length Column:</strong> <?= lengthColumn ?></p>
+      <p><strong>Breadth Column:</strong> <?= breadthColumn ?></p>
+      <p><strong>Height Column:</strong> <?= heightColumn ?></p>
+      <p><strong>Sheet Width Column:</strong> <?= sheetWidthColumn ?></p>
+      <p><strong>Sheet Height Column:</strong> <?= sheetHeightColumn ?></p>
+      <p><strong>Customer PO Column:</strong> <?= customerPoColumn ?></p>
+      <p><strong>QR Code URL Column:</strong> <?= deliveryDateColumn ?></p>
       <p><strong>Etc# Confirmation Column:</strong> <?= etcNumberConfirmationColumn ?></p>
       <p><strong>Rec. Qty Column:</strong> <?= recQtyColumn ?></p>
       <p><strong>Inventory Column:</strong> <?= inventoryColumn ?></p>
+      <p><strong>Total Inventory Column:</strong> <?= totalInventoryColumn ?></p>
       <p><strong>Print Column:</strong> <?= printColumn ?></p>
       <p><strong>Cut Column:</strong> <?= cutColumn ?></p>
       <p><strong>Glue Column:</strong> <?= glueColumn ?></p>

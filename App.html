@@ -1,13 +1,16 @@
 <!doctype html>
 <html>
   <head>
-    <?!= HtmlService.createHtmlOutputFromFile('Style').getContent(); ?> <?!=
-    HtmlService.createHtmlOutputFromFile('CatalogStyle').getContent(); ?>
+    <?!= HtmlService.createHtmlOutputFromFile('Style').getContent(); ?>
+    <?!= HtmlService.createHtmlOutputFromFile('CatalogStyle').getContent(); ?>
   </head>
   <body>
     <h1>Inventory QR</h1>
     <div id="overlay" style="display: none">
       <div id="spinner"></div>
+    </div>
+    <div id="confirmation" style="display: none">
+      <div id="updated">UPDATED!!!</div>
     </div>
     <!-- Tab Navigation -->
     <div id="tab-navigation">
@@ -36,7 +39,7 @@
       <!-- <button id="capture">Scan</button> -->
       <!-- <button id="activateButton">Activate</button> -->
       <div id="result" style="margin-top: 20px"></div>
-      <div id="result2" style="margin-top: 20px"></div>
+      <div id="result1" style="margin-top: 20px"></div>
     </div>
 
     <!-- <canvas id="canvas" width="300" height="300" style="display: none"></canvas> -->
@@ -315,6 +318,13 @@
       function hideSpinner() {
         document.getElementById("overlay").style.display = "none";
       }
+      function showUpdate() {
+        document.getElementById("confirmation").style.display = "flex";
+      }
+
+      function hideUpdate() {
+        document.getElementById("confirmation").style.display = "none";
+      }
 
       function applyMask() {
         document
@@ -422,6 +432,7 @@
       // }
 
       function displayRowData(rowData) {
+        console.log("Row data:", rowData);
         window.calculateResult = function () {
           showSpinner();
 
@@ -445,41 +456,65 @@
             hideSpinner();
           }, 10); // 10 milliseconds delay
         };
+        window.handleCheckboxChange =  function() {
+          var checkbox = document.querySelectorAll("input.checkbox");
+          console.log(checkbox);
+          for(let i = 0; i < checkbox.length; i++) {
+              if (checkbox[i].checked) {
+                checkbox[i].setAttribute('checked', 'checked');
+              } else {
+                checkbox[i].removeAttribute('checked');
+              }
+          }
+        }
 
         window.submitNewValue = function () {
           showSpinner();
-          var calculatedValue = document.getElementById("resultBox").value;
+          var calculatedValue = {printCheck:document.getElementById("printCheck").checked,
+             cutCheck:document.getElementById("cutCheck").checked,
+          glueCheck: document.getElementById("glueCheck").checked,
+          recInput: document.getElementById("recInput").value,
+          etcInput: document.getElementById("etcInput").value,
+          damageInput: document.getElementById("damageInput").value,
+          skidInput: document.getElementById("skidInput").value,
+          inventoryInput: document.getElementById("invInput").value,}
+          // var calculatedValue = document.getElementById("resultBox").value;
 
           if (calculatedValue === "") {
             hideSpinner();
             return;
           }
-
+          console.log("Calculated value:", calculatedValue, rowData);
           google.script.run
             .withSuccessHandler(function (updatedRowData) {
+              console.log("Updated row data:", updatedRowData);
               hideSpinner();
+              showUpdate();
               // Assuming updatedRowData is an array with 3 elements
               if (updatedRowData.length) {
                 // Clear input
-                document.getElementById("numberInput").value = "";
-                document.getElementById("resultBox").value = "";
+                // document.getElementById("numberInput").value = "";
+                // document.getElementById("resultBox").value = "";
 
                 // Directly update the elements by IDs
                 document.getElementById("infoID").innerHTML = updatedRowData[0]; // ID
-                document.getElementById("infoValue").innerHTML =
-                  updatedRowData[1]; // Value
+                document.getElementById("infoName").innerHTML = updatedRowData[1]; // ID
+                document.getElementById("infoRecQty").innerHTML =
+                  updatedRowData[1].recInput; 
+                document.getElementById("infoEtcQty").innerHTML =
+                  updatedRowData[1].etcInput; // Value
+                document.getElementById("infoInventory").innerHTML =
+                updatedRowData[1].invInput; // Value
+                document.getElementById("infoPrint").innerHTML =
+                updatedRowData[1].printCheck ? 'Completed': 'Not Completed'; // Value
+                document.getElementById("infoCut").innerHTML =
+                updatedRowData[1].cutCheck ? 'Completed': 'Not Completed'; // Value
+                document.getElementById("infoGlue").innerHTML =
+                updatedRowData[1].glueCheck ? 'Completed': 'Not Completed'; // Value
                 document.getElementById("infoUpdatedAt").innerHTML =
                   updatedRowData[2]; // Updated At
 
-                // Add highlight class
-                infoValue.classList.add("highlight");
-                infoUpdatedAt.classList.add("highlight");
-
-                // Remove highlight after 5 seconds
-                setTimeout(function () {
-                  infoValue.classList.remove("highlight");
-                  infoUpdatedAt.classList.remove("highlight");
-                }, 5000);
+                  hideUpdate()
               } else {
                 // Handle the case where the data is not as expected
                 console.error("Updated data format is incorrect");
@@ -495,26 +530,58 @@
         var value = rowData[1]; // Assuming value is in the second column
         var displayText =
           '<div class="info-container">' +
-          '<p class="info-item"><span class="info-label">Name:</span> <span id="infoID">' +
+          '<p class="info-item"><span class="info-label">Id:</span> <span id="infoID">' +
           rowData[0] +
           "</span></p>" +
-          '<p class="info-item"><span class="info-label">Quantity:</span> <span id="infoValue">' +
+          '<p class="info-item"><span class="info-label">Name:</span> <span id="infoName">' +
           rowData[1] +
           "</span></p>" +
-          '<p class="info-item"><span class="info-label">Updated At:</span> <span id="infoUpdatedAt">' +
+          '<p class="info-item"><span class="info-label">ETC# Qty:</span> <span id="infoEtcQty">' +
           rowData[2] +
+          "</span></p>" +
+          '<p class="info-item"><span class="info-label">Rec# Qty:</span> <span id="infoRecQty">' +
+          rowData[3] +
+          "</span></p>" +
+          '<p class="info-item"><span class="info-label">Inventory Qty:</span> <span id="infoInventory">' +
+          rowData[4] +
+          "</span></p>" +
+          '<p class="info-item"><span class="info-label">Print:</span> <span id="infoPrint">' +
+          (rowData[5] ? 'Completed' : 'Not Completed') +
+          "</span></p>" +
+          '<p class="info-item"><span class="info-label">Cut:</span> <span id="infoCut">' +
+          (rowData[6] ? 'Completed' : 'Not Completed') +
+          "</span></p>" +
+          '<p class="info-item"><span class="info-label">Glue:</span> <span id="infoGlue">' +
+          (rowData[7] ? 'Completed' : 'Not Completed') +
+          "</span></p>" +
+          '<p class="info-item"><span class="info-label">Updated At:</span> <span id="infoUpdatedAt">' +
+          rowData[8] +
           "</span></p>" +
           "</div>";
 
-        displayText +=
-          'Enter a number to reduce by: <input type="number" inputmode="numeric" step="1" id="numberInput" min="0"><br>' +
-          '<button onclick="calculateResult()">Subtract Quantity</button><br>' +
-          'New Value: <input type="number" inputmode="numeric" step="1" id="resultBox"><br>' +
-          '<button onclick="submitNewValue()">Submit New Quantity</button>';
-
         document.getElementById("result").innerHTML = displayText;
-        applyMask();
-        applyMask3();
+
+        // displayText +=
+        //   'Enter a number to reduce by: <input type="number" inputmode="numeric" step="1" id="numberInput" min="0"><br>' +
+        //   '<button onclick="calculateResult()">Subtract Quantity</button><br>' +
+        //   'New Value: <input type="number" inputmode="numeric" step="1" id="resultBox"><br>' +
+        //   '<button onclick="submitNewValue()">Submit New Quantity</button>';
+
+        var displayText1 = '<div>ETC# Confirmation: <br><input type="number" inputmode="numeric" step="1" id="etcInput" min="0"></div>';
+        displayText1 += '<div>Rec Qty: <br><input type="number" inputmode="numeric" step="1" id="recInput" min="0"></div>';
+        displayText1 += '<div>Inventory: <br><input type="number" inputmode="numeric" step="1" id="invInput" min="0"></div>';
+        displayText1 += '<div class="checkboxStatus"><div>Print: <input type="checkbox" class="checkbox" id="printCheck" ' + (rowData[5] ? 'checked' : '') + '></div>';
+        displayText1 += '<div>Cut: <input type="checkbox" class="checkbox" id="cutCheck" ' + (rowData[6] ? 'checked' : '') + '></div>';
+        displayText1 += '<div>Glue: <input type="checkbox" class="checkbox" id="glueCheck" ' + (rowData[7] ? 'checked' : '') + '></div></div>';
+        displayText1 += '<div>Damage: <br><input type="number" inputmode="numeric" step="1" id="damageInput" min="0"></div>';
+        displayText1 += '<div>Skid#: <br><input type="number" inputmode="numeric" step="1" id="skidInput" min="0"></div>';
+
+        
+        displayText1 += '<button onclick="submitNewValue()">Submit</button>';
+
+        document.getElementById("result1").innerHTML = displayText1;
+        // applyMask();
+        // applyMask3();
       }
     </script>
   </body>

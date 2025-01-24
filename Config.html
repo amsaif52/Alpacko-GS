@@ -55,14 +55,69 @@
           <div class="error" id="error-poNumberColumn"></div>
         </div>
         <div class="form-group">
+          <label for="nameColumn">Name Column:</label>
+          <input type="text" id="nameColumn" name="nameColumn" />
+          <div class="error" id="error-nameColumn"></div>
+        </div>
+        <div class="form-group">
           <label for="qrCodeUrlColumn">QR Code URL Column:</label>
           <input type="text" id="qrCodeUrlColumn" name="qrCodeUrlColumn" />
           <div class="error" id="error-qrCodeUrlColumn"></div>
         </div>
         <div class="form-group">
-          <label for="nameColumn">Name Column:</label>
-          <input type="text" id="nameColumn" name="nameColumn" />
-          <div class="error" id="error-nameColumn"></div>
+          <label for="etcColumn">ETC:</label>
+          <input type="text" id="etcColumn" name="etcColumn" />
+          <div class="error" id="error-etcColumn"></div>
+        </div>
+        <div class="form-group">
+          <label for="expectedQtyColumn">Expected Qty:</label>
+          <input type="text" id="expectedQtyColumn" name="expectedQtyColumn" />
+          <div class="error" id="error-expectedQtyColumn"></div>
+        </div>
+        <div class="form-group">
+          <label for="arrivalDateColumn">Arrival Date:</label>
+          <input type="text" id="arrivalDateColumn" name="arrivalDateColumn" />
+          <div class="error" id="error-arrivalDateColumn"></div>
+        </div>
+        <div class="form-group">
+          <label for="customerColumn">Customer:</label>
+          <input type="text" id="customerColumn" name="customerColumn" />
+          <div class="error" id="error-customerColumn"></div>
+        </div>
+        <div class="form-group">
+          <label for="lengthColumn">Length:</label>
+          <input type="text" id="lengthColumn" name="lengthColumn" />
+          <div class="error" id="error-lengthColumn"></div>
+        </div>
+        <div class="form-group">
+          <label for="breadthColumn">Breadth:</label>
+          <input type="text" id="breadthColumn" name="breadthColumn" />
+          <div class="error" id="error-breadthColumn"></div>
+        </div>
+        <div class="form-group">
+          <label for="heightColumn">Height:</label>
+          <input type="text" id="heightColumn" name="heightColumn" />
+          <div class="error" id="error-heightColumn"></div>
+        </div>
+        <div class="form-group">
+          <label for="sheetWidthColumn">Sheet Width:</label>
+          <input type="text" id="sheetWidthColumn" name="sheetWidthColumn" />
+          <div class="error" id="error-sheetWidthColumn"></div>
+        </div>
+        <div class="form-group">
+          <label for="sheetHeightColumn">Sheet Height:</label>
+          <input type="text" id="sheetHeightColumn" name="sheetHeightColumn" />
+          <div class="error" id="error-sheetHeightColumn"></div>
+        </div>
+        <div class="form-group">
+          <label for="customerPoColumn">Customer PO:</label>
+          <input type="text" id="customerPoColumn" name="customerPoColumn" />
+          <div class="error" id="error-customerPoColumn"></div>
+        </div>
+        <div class="form-group">
+          <label for="deliveryDateColumn">Delivery Date:</label>
+          <input type="text" id="deliveryDateColumn" name="deliveryDateColumn" />
+          <div class="error" id="error-deliveryDateColumn"></div>
         </div>
         <div class="form-group">
           <label for="etcNumberConfirmationColumn">ETC # Confirmation Column:</label>
@@ -78,6 +133,11 @@
           <label for="inventoryColumn">Inventory Column:</label>
           <input type="text" id="inventoryColumn" name="inventoryColumn" />
           <div class="error" id="error-inventoryColumn"></div>
+        </div>
+        <div class="form-group">
+          <label for="totalInventoryColumn">Total Inventory Column:</label>
+          <input type="text" id="totalInventoryColumn" name="totalInventoryColumn" />
+          <div class="error" id="error-totalInventoryColumn"></div>
         </div>
         <div class="form-group">
           <label for="printColumn">Print Column:</label>
@@ -174,11 +234,22 @@
             // Update configuration display with returned data
             document.getElementById("poNumberColumn").value = configData.poNumberColumn;
             document.getElementById("nameColumn").value = configData.nameColumn;
-            document.getElementById("qrCodeUrlColumn").value =
-            configData.qrCodeUrlColumn;
+            document.getElementById("qrCodeUrlColumn").value = configData.qrCodeUrlColumn;
+            document.getElementById("etcColumn").value = configData.etcColumn;
+            document.getElementById("expectedQtyColumn").value = configData.expectedQtyColumn;
+            document.getElementById("arrivalDateColumn").value = configData.qrCodeUrlColumn;
+            document.getElementById("customerColumn").value = configData.customerColumn;
+            document.getElementById("lengthColumn").value = configData.lengthColumn;
+            document.getElementById("breadthColumn").value = configData.breadthColumn;
+            document.getElementById("heightColumn").value = configData.heightColumn;
+            document.getElementById("sheetWidthColumn").value = configData.qrCodeUrlColumn;
+            document.getElementById("sheetHeightColumn").value = configData.poNumberColumn;
+            document.getElementById("customerPoColumn").value = configData.nameColumn;
+            document.getElementById("deliveryDateColumn").value = configData.qrCodeUrlColumn;
             document.getElementById("etcNumberConfirmationColumn").value = configData.etcNumberConfirmationColumn;
             document.getElementById("recQtyColumn").value = configData.recQtyColumn;
             document.getElementById("inventoryColumn").value = configData.inventoryColumn;
+            document.getElementById("totalInventoryColumn").value = configData.totalInventoryColumn;
             document.getElementById("printColumn").value = configData.printColumn;
             document.getElementById("cutColumn").value = configData.cutColumn;
             document.getElementById("glueColumn").value = configData.glueColumn;
