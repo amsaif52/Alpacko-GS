@@ -1,0 +1,518 @@
+<!doctype html>
+<html>
+  <head>
+    <?!= HtmlService.createHtmlOutputFromFile('Style').getContent(); ?> <?!=
+    HtmlService.createHtmlOutputFromFile('CatalogStyle').getContent(); ?>
+  </head>
+  <body>
+    <h1>Inventory QR</h1>
+    <div id="overlay" style="display: none">
+      <div id="spinner"></div>
+    </div>
+    <!-- Tab Navigation -->
+    <div id="tab-navigation">
+      <button id="btnTab1" class="tab-button" onclick="showTab('tab1')">
+        Scan
+      </button>
+      <button id="btnTab2" class="tab-button" onclick="showTab('tab2')">
+        Catalog
+      </button>
+      <!-- <button id="btnTab3" class="tab-button" onclick="showTab('tab3')">XYZ</button> -->
+    </div>
+
+    <!-- Tab 1: Capture Image -->
+    <!-- <div id="tab1" class="tab-content"> -->
+    <div id="tab1" class="tab-content">
+      <div id="qr-reader" style="width:700px"></div>
+      <div id="qr-reader-results"></div>
+
+      <!-- <video id="video" width="300" height="300" autoplay playsinline></video> -->
+      <!-- <video id="video" width="640" height="480" autoplay playsinline></video> -->
+
+      <!-- <button id="startCamera">Start Camera</button> -->
+      <!-- <button id="capture">Scan</button> -->
+      <!-- <button id="activateButton">Activate</button> -->
+      <div id="result" style="margin-top: 20px"></div>
+      <div id="result2" style="margin-top: 20px"></div>
+    </div>
+
+    <!-- <canvas id="canvas" width="300" height="300" style="display: none"></canvas> -->
+
+    <!-- Tab 2: Carousel Content -->
+    <div id="tab2" class="tab-content" style="display: none">
+      <div id="carousel" class="carousel">
+        <button class="carousel-button prev">←</button>
+        <div id="carousel-items" class="carousel-items">
+          <!-- Items will be dynamically inserted here -->
+        </div>
+        <button class="carousel-button next">→</button>
+      </div>
+    </div>
+
+    <!-- Tab 3: Placeholder Content -->
+    <!-- <div id="tab3" class="tab-content" style="display:none;">
+        <h1>Content for Tab 3</h1> -->
+    <!-- Add content for Tab 3 here -->
+    <!-- </div> -->
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script> -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <!-- Embed SortableJS -->
+
+    <script>
+      const video = document.getElementById("video");
+      const canvas = document.getElementById("canvas");
+      // const context = canvas.getContext("2d");
+      const captureButton = document.getElementById("capture");
+      const activateButton = document.getElementById("activateButton");
+      const startCameraButton = document.getElementById("startCamera");
+      let currentItemIndex = 0; // Moved outside to be globally accessible
+
+      const resultContainer = document.getElementById('qr-reader-results');
+      let lastResult, countResults = 0;
+
+      function onScanSuccess(decodedText, decodedResult) {
+          if (decodedText !== lastResult) {
+              ++countResults;
+              lastResult = decodedText;
+              // Handle on success condition with the decoded message.
+              if (decodedText) {
+                google.script.run
+                  .withSuccessHandler(onQRCodeFound)
+                  .withFailureHandler(function (error) {
+                    hideSpinner();
+                    alert("Error in searchSheetForUrl:", error);
+                  })
+                  .searchPrimarySheet(decodedText);
+              }
+            
+              console.log(`Scan result ${decodedText}`, decodedResult);
+          }
+      }
+
+      const html5QrcodeScanner = new Html5QrcodeScanner(
+          "qr-reader", { fps: 10, qrbox: 450 });
+      html5QrcodeScanner.render(onScanSuccess);
+
+      // Function to attempt to find the rear camera
+      // function getRearCamera(devices) {
+      //   const rearCamera = devices.find((device) => {
+      //     return (
+      //       device.kind === "videoinput" &&
+      //       device.label.toLowerCase().includes("back")
+      //     );
+      //   });
+      //   return rearCamera ? rearCamera.deviceId : null;
+      // }
+
+      // startCameraButton.addEventListener("click", function () {
+      //   let constraints = {};
+
+      //   // Detect mobile device
+      //   const isMobile =
+      //     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      //       navigator.userAgent,
+      //     );
+
+      //   if (isMobile) {
+      //     // Prefer the back camera on mobile devices
+      //     constraints = { video: { facingMode: "environment" } };
+      //   } else {
+      //     // For desktop, get any available camera
+      //     constraints = { video: true };
+      //   }
+
+      //   // Access the camera
+      //   navigator.mediaDevices
+      //     .getUserMedia(constraints)
+      //     .then(function (stream) {
+      //       const video = document.getElementById("video");
+      //       video.srcObject = stream;
+      //       video.onloadedmetadata = function (e) {
+      //         video.play();
+      //       };
+      //     })
+      //     .catch(function (err) {
+      //       console.log(err.name + ": " + err.message);
+      //     });
+      // });
+
+      function populateCarousel(data) {
+        // Destructure data to get finalCarouselData and headersOrder
+        const { finalCarouselData, headersOrder } = data;
+        const carouselItemsContainer =
+          document.getElementById("carousel-items");
+        carouselItemsContainer.innerHTML = ""; // Clear existing items
+
+        finalCarouselData?.forEach((row, index) => {
+          const item = document.createElement("div");
+          item.className = "carousel-item";
+          item.style.display = index === 0 ? "block" : "none"; // Only show the first item initially
+
+          // Iterate based on headersOrder to preserve order
+          headersOrder.forEach((header) => {
+            const value = row[header];
+            const element = document.createElement("div");
+            const stringValue = value?.toString() ?? "";
+
+            // Check if the string is an image URL
+            if (isImageUrl(stringValue)) {
+              const img = document.createElement("img");
+              img.src = stringValue;
+              img.alt = header;
+              img.style.maxWidth = "100%"; // Ensure the image fits in the carousel
+              img.style.height = "auto"; // Keep the aspect ratio
+              element.appendChild(img);
+            } else if (stringValue.startsWith("http")) {
+              // For non-image URLs, create a link
+              const link = document.createElement("a");
+              link.href = stringValue;
+              link.textContent = stringValue; // Or any other text indicating it's a link
+              link.target = "_blank"; // Open in new tab
+
+              // Create a container for the label and the link
+              const container = document.createElement("div");
+              container.innerHTML = `<strong>${header}:</strong> `;
+              container.appendChild(link); // Append the link element to the container
+
+              element.appendChild(container); // Append the container to the element
+            } else {
+              // For non-URL content
+              element.innerHTML = `<strong>${header}:</strong> ${stringValue}`;
+            }
+            item.appendChild(element);
+          });
+          carouselItemsContainer.appendChild(item);
+        });
+
+        // Attach event listeners only once
+        attachNavigationListeners(finalCarouselData);
+        updateCarousel(currentItemIndex, finalCarouselData);
+        hideSpinner();
+      }
+
+      // Helper function to check if a string is an image URL or a qr code or an image from Google Drive
+      function isImageUrl(url) {
+        return (
+          /\.(jpg|jpeg|png|gif)$/i.test(url) ||
+          /https:\/\/quickchart\.io\/chart/i.test(url) ||
+          /^https:\/\/drive\.google\.com\/thumbnail/.test(url)
+        );
+      }
+
+      function updateCarousel(index, data) {
+        const items = document.querySelectorAll(".carousel-item");
+        // Hide all items
+        items.forEach((item) => {
+          item.style.display = "none";
+        });
+        // Show the item at the current index
+        if (items[index]) {
+          items[index].style.display = "block";
+        }
+      }
+
+      function attachNavigationListeners(data) {
+        // Check if the 'prev' button already has listeners attached
+        const prevButton = document.querySelector(".prev");
+        const nextButton = document.querySelector(".next");
+        if (!prevButton.getAttribute("data-has-listeners")) {
+          prevButton.addEventListener("click", () => {
+            currentItemIndex =
+              (currentItemIndex - 1 + data.length) % data.length;
+            updateCarousel(currentItemIndex, data);
+          });
+          // Mark that listeners have been added
+          prevButton.setAttribute("data-has-listeners", "true");
+        }
+
+        // Check if the 'next' button already has listeners attached
+        if (!nextButton.getAttribute("data-has-listeners")) {
+          nextButton.addEventListener("click", () => {
+            currentItemIndex = (currentItemIndex + 1) % data.length;
+            updateCarousel(currentItemIndex, data);
+          });
+          // Mark that listeners have been added
+          nextButton.setAttribute("data-has-listeners", "true");
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        var btnTab2 = document.getElementById("btnTab2");
+        if (btnTab2) {
+          btnTab2.addEventListener("click", function () {
+            showSpinner();
+            google.script.run
+              .withSuccessHandler(populateCarousel)
+              .withFailureHandler(function () {
+                showSpinner();
+              })
+              .getCarouselData();
+          });
+        } else {
+          console.log("Element with ID btnTab2 not found.");
+        }
+      });
+
+      // captureButton.addEventListener("click", function () {
+      //   showSpinner();
+      //   context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      //   const imageData = context.getImageData(
+      //     0,
+      //     0,
+      //     canvas.width,
+      //     canvas.height,
+      //   );
+      //   const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+      //   if (code) {
+      //     google.script.run
+      //       .withSuccessHandler(onQRCodeFound)
+      //       .withFailureHandler(function (error) {
+      //         hideSpinner();
+      //         alert("Error in searchSheetForUrl:", error);
+      //       })
+      //       .searchPrimarySheet(code.data);
+      //   } else {
+      //     hideSpinner();
+      //     alert("No QR Code found");
+      //   }
+      // });
+
+      // activateButton.addEventListener("click", function () {
+      //   context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      //   const imageData = context.getImageData(
+      //     0,
+      //     0,
+      //     canvas.width,
+      //     canvas.height,
+      //   );
+      //   const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+      //   if (code) {
+      //     google.script.run
+      //       .withSuccessHandler(onQRCodeFoundActivate)
+      //       .withFailureHandler(function (error) {
+      //         hideSpinner();
+      //         alert("Error in searchSheetForUrl:", error);
+      //       })
+      //       .searchSheetForUrlActivate(code.data);
+      //   } else {
+      //     hideSpinner();
+      //     alert("No QR Code found");
+      //   }
+      // });
+
+      function showSpinner() {
+        document.getElementById("overlay").style.display = "flex";
+      }
+
+      function hideSpinner() {
+        document.getElementById("overlay").style.display = "none";
+      }
+
+      function applyMask() {
+        document
+          .getElementById("numberInput")
+          .addEventListener("input", function (e) {
+            // Remove non-digit characters
+            var value = this.value.replace(/\D/g, "");
+
+            // Update the input field with the modified value
+            this.value = value;
+          });
+      }
+
+      function applyMask2() {
+        document
+          .getElementById("activateValueInput")
+          .addEventListener("input", function (e) {
+            // Remove non-digit characters
+            var value = this.value.replace(/\D/g, "");
+
+            // Update the input field with the modified value
+            this.value = value;
+          });
+      }
+
+      function applyMask3() {
+        document
+          .getElementById("resultBox")
+          .addEventListener("input", function (e) {});
+      }
+
+      function showTab(tabId) {
+        // Hide all tab contents
+        let tabs = document.getElementsByClassName("tab-content");
+        for (var i = 0; i < tabs.length; i++) {
+          tabs[i].style.display = "none";
+        }
+        document.getElementById(tabId).style.display = "flex";
+        document.getElementById(tabId).style.width = "95%";
+
+        // Update tab button styles
+        let tabButtons = document.getElementsByClassName("tab-button");
+        for (var i = 0; i < tabButtons.length; i++) {
+          tabButtons[i].classList.remove("tab-button-active");
+        }
+        document
+          .getElementById("btn" + tabId)
+          .classList.add("tab-button-active");
+      }
+
+      function onQRCodeFound(rowData) {
+        hideSpinner();
+        if (rowData) {
+          displayRowData(rowData);
+        } else {
+          document.getElementById("result").innerHTML =
+            "No match found in the sheet.";
+        }
+      }
+
+      // function onQRCodeFoundActivate(rowData) {
+      //   hideSpinner();
+      //   if (rowData) {
+      //     if (rowData.length === 0) {
+      //       document.getElementById("result").innerHTML =
+      //         "Card already activated";
+      //       return;
+      //     }
+      //     displayActivateComponent(rowData);
+      //   } else {
+      //     document.getElementById("result").innerHTML = "No match found.";
+      //   }
+      // }
+
+      // function displayActivateComponent(rowData) {
+      //   var value = rowData[1]; // Assuming value is in the second column
+      //   var displayText = "ID: " + rowData[1] + "<br>";
+
+      //   displayText +=
+      //     'Enter amount to subtract: <input type="number" inputmode="numeric" step="1" id="activateValueInput"  min="0"><br>' +
+      //     '<button onclick="submitActivate()">Submit</button>';
+
+      //   document.getElementById("result").innerHTML = displayText;
+      //   applyMask2();
+
+      //   window.submitActivate = function () {
+      //     showSpinner();
+      //     var calculatedValue =
+      //       document.getElementById("activateValueInput").value;
+      //     google.script.run
+      //       .withSuccessHandler(function () {
+      //         // Clear input
+      //         document.getElementById("activateValueInput").value = 0;
+
+      //         document.getElementById("result").innerHTML =
+      //           `Activated with value of ${calculatedValue}`;
+      //         hideSpinner();
+      //       })
+      //       .withFailureHandler(function (error) {
+      //         alert("Error in searchSheetForUrl:", error);
+      //         hideSpinner();
+      //       })
+      //       .activateCard(rowData[0], calculatedValue); // Assuming rowData[0] is the UUID
+      //   };
+      // }
+
+      function displayRowData(rowData) {
+        window.calculateResult = function () {
+          showSpinner();
+
+          // Use setTimeout to allow UI update
+          setTimeout(function () {
+            var numberInput = parseFloat(
+              document.getElementById("numberInput").value,
+            );
+
+            var result = value - numberInput;
+
+            result = result < 0 ? 0 : result;
+
+            if (!isNaN(result)) {
+              document.getElementById("resultBox").value = result;
+            } else {
+              document.getElementById("resultBox").value = "Invalid input";
+            }
+
+            // Hide spinner after calculation
+            hideSpinner();
+          }, 10); // 10 milliseconds delay
+        };
+
+        window.submitNewValue = function () {
+          showSpinner();
+          var calculatedValue = document.getElementById("resultBox").value;
+
+          if (calculatedValue === "") {
+            hideSpinner();
+            return;
+          }
+
+          google.script.run
+            .withSuccessHandler(function (updatedRowData) {
+              hideSpinner();
+              // Assuming updatedRowData is an array with 3 elements
+              if (updatedRowData.length) {
+                // Clear input
+                document.getElementById("numberInput").value = "";
+                document.getElementById("resultBox").value = "";
+
+                // Directly update the elements by IDs
+                document.getElementById("infoID").innerHTML = updatedRowData[0]; // ID
+                document.getElementById("infoValue").innerHTML =
+                  updatedRowData[1]; // Value
+                document.getElementById("infoUpdatedAt").innerHTML =
+                  updatedRowData[2]; // Updated At
+
+                // Add highlight class
+                infoValue.classList.add("highlight");
+                infoUpdatedAt.classList.add("highlight");
+
+                // Remove highlight after 5 seconds
+                setTimeout(function () {
+                  infoValue.classList.remove("highlight");
+                  infoUpdatedAt.classList.remove("highlight");
+                }, 5000);
+              } else {
+                // Handle the case where the data is not as expected
+                console.error("Updated data format is incorrect");
+              }
+            })
+            .withFailureHandler(function (error) {
+              alert("Error in searchSheetForUrl:", error);
+              hideSpinner();
+            })
+            .addTransaction(rowData, calculatedValue);
+        };
+
+        var value = rowData[1]; // Assuming value is in the second column
+        var displayText =
+          '<div class="info-container">' +
+          '<p class="info-item"><span class="info-label">Name:</span> <span id="infoID">' +
+          rowData[0] +
+          "</span></p>" +
+          '<p class="info-item"><span class="info-label">Quantity:</span> <span id="infoValue">' +
+          rowData[1] +
+          "</span></p>" +
+          '<p class="info-item"><span class="info-label">Updated At:</span> <span id="infoUpdatedAt">' +
+          rowData[2] +
+          "</span></p>" +
+          "</div>";
+
+        displayText +=
+          'Enter a number to reduce by: <input type="number" inputmode="numeric" step="1" id="numberInput" min="0"><br>' +
+          '<button onclick="calculateResult()">Subtract Quantity</button><br>' +
+          'New Value: <input type="number" inputmode="numeric" step="1" id="resultBox"><br>' +
+          '<button onclick="submitNewValue()">Submit New Quantity</button>';
+
+        document.getElementById("result").innerHTML = displayText;
+        applyMask();
+        applyMask3();
+      }
+    </script>
+  </body>
+</html>

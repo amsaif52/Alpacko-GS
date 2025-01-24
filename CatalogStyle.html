@@ -1,0 +1,51 @@
+<style>
+    .carousel {
+      display: flex;
+      align-items: flex-start;
+      width: 100%;
+    }
+  
+    .carousel-items {
+      display: flex;
+      overflow: hidden;
+      padding: 1em;
+    }
+  
+    .carousel-item {
+      flex: none;
+      width: 100%; /* Ensures each item takes full width of the container */
+      margin-top: 1rem;
+    }
+  
+    .carousel-button {
+      cursor: pointer;
+    }
+    .carousel-button.prev,
+    .carousel-button.next {
+      height: 100vh; /* Adjust the height to make the arrow taller */
+      width: 4rem; /* Adjust the width to make the arrow more narrow */
+      background-color: #f0f0f0; /* Example background color */
+      border: none; /* Removes border if any */
+      color: black; /* Arrow color */
+      font-size: 24px; /* Adjusts the size of the arrow symbol if using text symbols like < and > */
+      line-height: 50px; /* Centers the arrow symbol vertically */
+      text-align: center; /* Centers the arrow symbol horizontally */
+      cursor: pointer; /* Changes the cursor to pointer when hovering over the arrows */
+      display: flex;
+      justify-content: center; /* Center content horizontally */
+      align-items: center; /* Center content vertically */
+      font-size: 1em;
+      color: white;
+    }
+  
+    /* Additional styling for hover effect to give visual feedback */
+    .carousel-button.prev:hover,
+    .carousel-button.next:hover {
+      background-color: #e0e0e0; /* Slightly darker background on hover */
+    }
+  
+    .carousel {
+      justify-content: space-between;
+    }
+  </style>
+  

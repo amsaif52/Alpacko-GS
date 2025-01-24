@@ -1,0 +1,230 @@
+<!doctype html>
+<html>
+  <head>
+    <style>
+      /* Existing styles */
+      .error {
+        color: red;
+        font-size: 12px;
+      }
+      /* Spinner styles */
+      .spinner {
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border-left-color: #09f;
+        animation: spin 1s ease infinite;
+        display: none; /* Hidden by default */
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin: -18px 0 0 -18px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="spinner" id="spinner"></div>
+
+    <!-- Sheet Selection -->
+    <div id="sheetSelection">
+      <h2>Select Primary Sheet</h2>
+      <div id="sheetsList"></div>
+      <button onclick="saveSelection()">Save</button>
+    </div>
+
+    <div id="currentConfig" class="hidden">
+      <form id="settings-form">
+        <!-- Form groups unchanged -->
+        <div class="form-group">
+          <label for="poNumberColumn">PO# Column:</label>
+          <input type="text" id="poNumberColumn" name="poNumberColumn" />
+          <div class="error" id="error-poNumberColumn"></div>
+        </div>
+        <div class="form-group">
+          <label for="qrCodeUrlColumn">QR Code URL Column:</label>
+          <input type="text" id="qrCodeUrlColumn" name="qrCodeUrlColumn" />
+          <div class="error" id="error-qrCodeUrlColumn"></div>
+        </div>
+        <div class="form-group">
+          <label for="nameColumn">Name Column:</label>
+          <input type="text" id="nameColumn" name="nameColumn" />
+          <div class="error" id="error-nameColumn"></div>
+        </div>
+        <div class="form-group">
+          <label for="etcNumberConfirmationColumn">ETC # Confirmation Column:</label>
+          <input type="text" id="etcNumberConfirmationColumn" name="etcNumberConfirmationColumn" />
+          <div class="error" id="error-etcNumberConfirmationColumn"></div>
+        </div>
+        <div class="form-group">
+          <label for="recQtyColumn">Received Quantity Column:</label>
+          <input type="text" id="recQtyColumn" name="recQtyColumn" />
+          <div class="error" id="error-recQtyColumn"></div>
+        </div>
+        <div class="form-group">
+          <label for="inventoryColumn">Inventory Column:</label>
+          <input type="text" id="inventoryColumn" name="inventoryColumn" />
+          <div class="error" id="error-inventoryColumn"></div>
+        </div>
+        <div class="form-group">
+          <label for="printColumn">Print Column:</label>
+          <input type="text" id="printColumn" name="printColumn" />
+          <div class="error" id="error-printColumn"></div>
+        </div>
+        <div class="form-group">
+          <label for="cutColumn">Cut Column:</label>
+          <input type="text" id="cutColumn" name="cutColumn" />
+          <div class="error" id="error-cutColumn"></div>
+        </div>
+        <div class="form-group">
+          <label for="glueColumn">Glue Column:</label>
+          <input type="text" id="glueColumn" name="glueColumn" />
+          <div class="error" id="error-glueColumn"></div>
+        </div>
+        <div class="form-group">
+          <label for="damageColumn">Damage Column:</label>
+          <input type="text" id="damageColumn" name="damageColumn" />
+          <div class="error" id="error-damageColumn"></div>
+        </div>
+        <div class="form-group">
+          <label for="skidNumberColumn">Skid# Column:</label>
+          <input type="text" id="skidNumberColumn" name="skidNumberColumn" />
+          <div class="error" id="error-skidNumberColumn"></div>
+        </div>
+        <div class="form-group">
+          <label for="updatedAtColumn">Updated At Column:</label>
+          <input type="text" id="updatedAtColumn" name="updatedAtColumn" />
+          <div class="error" id="error-updatedAtColumn"></div>
+        </div>
+        <button type="button" onclick="saveSettings()">Save</button>
+      </form>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const spinner = document.getElementById("spinner");
+
+        spinner.style.display = "block";
+        // Fetch sheet names and populate the list with radio buttons
+        google.script.run
+          .withSuccessHandler(function (data) {
+            const { sheetNamesJson, primarySheet } = data;
+            const sheetNames = JSON.parse(sheetNamesJson);
+            spinner.style.display = "none";
+            const container = document.getElementById("sheetsList");
+            container.innerHTML = ""; // Clear existing items just in case
+
+            sheetNames.forEach(function (name) {
+              const label = document.createElement("label");
+              const radio = document.createElement("input");
+              radio.type = "radio";
+              radio.value = name;
+              radio.name = "primarySheet";
+
+              if (name === primarySheet) radio.checked = true; // Pre-select the radio button
+
+              label.appendChild(radio);
+              label.appendChild(document.createTextNode(name));
+              container.appendChild(label);
+              container.appendChild(document.createElement("br"));
+            });
+          })
+          .getSheetNamesAndPrimarySheet();
+      });
+
+      // Save the selected sheet name
+      function saveSelection() {
+        const spinner = document.getElementById("spinner");
+        var selectedSheet = document.querySelector(
+          'input[name="primarySheet"]:checked',
+        )?.value;
+
+        // Check if a sheet is selected
+        if (!selectedSheet) {
+          // Display message to the user
+          const message = document.getElementById("selectionMessage");
+          message.textContent = "Please select a sheet!";
+          message.style.display = "block";
+          setTimeout(() => (message.style.display = "none"), 5000); // Hide message after 5 seconds
+          spinner.style.display = "none";
+          return;
+        }
+
+        spinner.style.display = "block";
+        google.script.run
+          .withSuccessHandler(function (configData) {
+            spinner.style.display = "none";
+            // Hide sheet selection and show configuration
+            document.getElementById("sheetSelection").classList.add("hidden");
+            document.getElementById("currentConfig").classList.remove("hidden");
+
+            // Update configuration display with returned data
+            document.getElementById("poNumberColumn").value = configData.poNumberColumn;
+            document.getElementById("nameColumn").value = configData.nameColumn;
+            document.getElementById("qrCodeUrlColumn").value =
+            configData.qrCodeUrlColumn;
+            document.getElementById("etcNumberConfirmationColumn").value = configData.etcNumberConfirmationColumn;
+            document.getElementById("recQtyColumn").value = configData.recQtyColumn;
+            document.getElementById("inventoryColumn").value = configData.inventoryColumn;
+            document.getElementById("printColumn").value = configData.printColumn;
+            document.getElementById("cutColumn").value = configData.cutColumn;
+            document.getElementById("glueColumn").value = configData.glueColumn;
+            document.getElementById("damageColumn").value = configData.damageColumn;
+            document.getElementById("skidNumberColumn").value = configData.skidNumberColumn;
+            document.getElementById("updatedAtColumn").value = configData.updatedAtColumn;
+          })
+          .getConfiguration(selectedSheet); // Fetch configuration for the selected sheet
+        google.script.run.savePrimarySheet(selectedSheet); // Save the selected sheet as primary
+      }
+
+      function saveSettings() {
+        const spinner = document.getElementById("spinner");
+        const form = document.getElementById("settings-form");
+        const formData = new FormData(form);
+        const settings = {};
+        let allFilled = true;
+
+        // Hide previous error messages and spinner
+        spinner.style.display = "none";
+        document
+          .querySelectorAll(".error")
+          .forEach((el) => (el.textContent = ""));
+
+        formData.forEach((value, key) => {
+          if (value.trim() === "") {
+            document.getElementById(`error-${key}`).textContent =
+              "This field is required";
+            allFilled = false;
+          } else {
+            settings[key] = value.trim();
+          }
+        });
+
+        if (allFilled) {
+          // Show spinner
+          spinner.style.display = "block";
+
+          google.script.run
+            .withSuccessHandler(function () {
+              spinner.style.display = "none"; // Hide spinner on success
+              google.script.host.close();
+            })
+            .saveColumnSettings(settings);
+        }
+      }
+    </script>
+  </body>
+</html>

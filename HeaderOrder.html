@@ -1,0 +1,161 @@
+<!doctype html>
+<html>
+  <head>
+    <base target="_top" />
+    <style>
+      #spinner,
+      #saveSpinner {
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 2s linear infinite;
+        position: fixed;
+        left: 50%;
+        top: 10%;
+        margin-left: -20px; /* Half the width */
+        margin-top: -20px; /* Half the height */
+        display: none; /* Hidden by default */
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+      }
+
+      .close:hover,
+      .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .sortable-ghost {
+        opacity: 0.4;
+        background: #c8ebfb;
+      }
+
+      #headerList {
+        list-style-type: none; /* Removes default list styling */
+        padding: 0;
+      }
+
+      #headerList li {
+        cursor: grab; /* Indicates the item can be grabbed */
+        padding: 10px 15px; /* Ample padding for easier clicking */
+        border: 1px solid #ccc; /* Light border for each item */
+        margin-bottom: 5px; /* Space between items */
+        background-color: #f9f9f9; /* Light background */
+        border-radius: 5px; /* Rounded corners for a softer look */
+      }
+
+      /* Styling for the item being dragged */
+      #headerList li.dragging {
+        opacity: 0.5; /* Make the dragging item semi-transparent */
+        cursor: grabbing; /* Indicates the item is being dragged */
+      }
+
+      /* Styling for the drop placeholder */
+      .drop-placeholder {
+        background-color: #e2eefd; /* Highlight color */
+        height: 40px; /* Match your list item height or adjust */
+        margin-bottom: 5px; /* Maintain consistency in spacing */
+        border: dashed 2px #0066ff; /* Dashed border for the placeholder */
+        border-radius: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="spinner" style="display: none"></div>
+
+    <!-- The Modal -->
+    <div id="myModal" class="modal">
+      <!-- Modal content -->
+      <div class="modal-content">
+        <h2>Arrange Headers</h2>
+        <ul id="headerList">
+          <!-- Headers will be populated here -->
+        </ul>
+        <button id="saveOrder">Save</button>
+        <span id="saveSpinner" style="display: none"></span>
+        <button id="resetOrder">Reset Order</button>
+        <!-- Reset Order Button -->
+        <button onclick="google.script.host.close()">Cancel</button>
+      </div>
+    </div>
+
+<script src="https://unpkg.com/sortablejs@1.15.2/Sortable.min.js"></script>
+    
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Show spinner
+    document.getElementById('spinner').style.display = 'block';
+
+    // Fetch headers and populate
+    google.script.run.withSuccessHandler(function(headers) {
+        // Populate headers
+        populateHeaders(headers);
+        
+        // Hide spinner after headers are populated
+        document.getElementById('spinner').style.display = 'none';
+    }).getHeadersFromPrimarySheet();
+
+
+    document.getElementById('saveOrder').addEventListener('click', function() {
+        document.getElementById('saveSpinner').style.display = 'inline';
+
+        const listItems = document.querySelectorAll('#headerList li');
+        const headerOrder = Array.from(listItems).map(li => li.textContent);
+
+        // Example: Call Google Apps Script function to save the order
+        google.script.run.withSuccessHandler(function() {
+
+          google.script.host.close();
+        }).saveHeaderOrder(headerOrder);
+    });
+
+    document.getElementById('resetOrder').addEventListener('click', function() {
+        document.getElementById('saveSpinner').style.display = 'block';
+        // Fetch and repopulate headers with the original order from the Primary sheet
+        google.script.run.withSuccessHandler(function(headers) {
+            populateHeaders(headers);
+            document.getElementById('saveSpinner').style.display = 'none';
+        }).getOriginalHeaderOrder(); // Make sure this function exists in your Google Apps Script
+    });
+  });
+
+function populateHeaders(headers) {
+    const list = document.getElementById('headerList');
+    list.innerHTML = ''; // Clear existing items
+    headers.forEach(header => {
+        const li = document.createElement('li');
+        li.textContent = header;
+        list.appendChild(li);
+    });
+
+    // Initialize SortableJS on the list
+    new Sortable(list, {
+        animation: 150, // ms, animation speed moving items when sorting, `0` — without animation
+        ghostClass: 'sortable-ghost', // Class name for the drop placeholder
+    });
+}
+
+// Assume this function is called after the modal is shown and headers are fetched
+// populateHeaders(fetchedHeaders);
+
+
+  </script>
+
+  </body>
+</html>
