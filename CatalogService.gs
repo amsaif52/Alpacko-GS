@@ -1,6 +1,45 @@
+function getOrders() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
+    Config.mainSheet
+  );
+
+  const [headers, ...rows] = sheet.getDataRange().getValues();
+  let sortedHeaders = headers;
+
+  // Convert data to a format suitable for serialization, respecting sortedHeaders
+  const finalData = rows
+    .map((row) => {
+      return sortedHeaders.reduce((obj, header, index) => {
+        let value = row[headers.indexOf(header)]; // Use the original headers array to match column data
+        // Check for Date objects and convert them to a string
+        if (value instanceof Date) {
+          value = Utilities.formatDate(
+            value,
+            Session.getScriptTimeZone(),
+            "MM-dd-YYYY"
+          );
+        }
+        // Ensure other types are handled correctly (e.g., numbers, strings, booleans)
+        obj[header] = value;
+        return obj;
+      }, {});
+    })
+    .filter((val) => {
+      const deliveryDate = new Date(val["Delivery Date"]);
+      const today = new Date();
+      deliveryDate.setHours(0, 0, 0, 0);
+      today.setHours(0, 0, 0, 0);
+      return deliveryDate >= today;
+    })
+    .sort((a, b) => {
+      return new Date(a["Delivery Date"]) - new Date(b["Delivery Date"]);
+    });
+  return { finalData };
+}
+
 function getCarouselData() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
-    Config.mainSheet,
+    Config.mainSheet
   );
   const properties = PropertiesService.getScriptProperties();
   const storedHeaderOrder = properties.getProperty("headerOrder");
@@ -37,7 +76,7 @@ function getCarouselData() {
         value = Utilities.formatDate(
           value,
           Session.getScriptTimeZone(),
-          "yyyy-MM-dd'T'HH:mm:ss'Z'",
+          "yyyy-MM-dd'T'HH:mm:ss'Z'"
         );
       }
       // Ensure other types are handled correctly (e.g., numbers, strings, booleans)

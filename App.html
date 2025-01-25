@@ -81,7 +81,7 @@
         countResults = 0;
 
       function onScanSuccess(decodedText, decodedResult) {
-        console.log('Scanners:', decodedText, decodedResult);
+        console.log("Scanners:", decodedText, decodedResult);
         if (decodedText !== lastResult) {
           ++countResults;
           lastResult = decodedText;
@@ -205,55 +205,24 @@
 
       function populateResults(data) {
         // Destructure data to get finalCarouselData and headersOrder
-        const { finalCarouselData, headersOrder } = data;
-        const carouselItemsContainer =
-          document.getElementById("carousel-items");
-        carouselItemsContainer.innerHTML = ""; // Clear existing items
+        const { finalData } = data;
 
-        finalCarouselData?.forEach((row, index) => {
-          const item = document.createElement("div");
-          item.className = "carousel-item";
-          item.style.display = index === 0 ? "block" : "none"; // Only show the first item initially
+        const orderResultsContainer = document.getElementById("order-results");
+        orderResultsContainer.innerHTML = ""; // Clear existing items
+        finalData.forEach((order) => {
+          const orderElement = document.createElement("div");
+          orderElement.className = "order-item";
 
-          // Iterate based on headersOrder to preserve order
-          headersOrder.forEach((header) => {
-            const value = row[header];
-            const element = document.createElement("div");
-            const stringValue = value?.toString() ?? "";
+          const orderId = document.createElement("p");
+          orderId.innerHTML = `<strong>Order ID:</strong> ${order["Customer PO"]}`;
+          orderElement.appendChild(orderId);
 
-            // Check if the string is an image URL
-            if (isImageUrl(stringValue)) {
-              const img = document.createElement("img");
-              img.src = stringValue;
-              img.alt = header;
-              img.style.maxWidth = "100%"; // Ensure the image fits in the carousel
-              img.style.height = "auto"; // Keep the aspect ratio
-              element.appendChild(img);
-            } else if (stringValue.startsWith("http")) {
-              // For non-image URLs, create a link
-              const link = document.createElement("a");
-              link.href = stringValue;
-              link.textContent = stringValue; // Or any other text indicating it's a link
-              link.target = "_blank"; // Open in new tab
+          const orderDate = document.createElement("p");
+          orderDate.innerHTML = `<strong>Date:</strong> ${order["Delivery Date"]}`;
+          orderElement.appendChild(orderDate);
 
-              // Create a container for the label and the link
-              const container = document.createElement("div");
-              container.innerHTML = `<strong>${header}:</strong> `;
-              container.appendChild(link); // Append the link element to the container
-
-              element.appendChild(container); // Append the container to the element
-            } else {
-              // For non-URL content
-              element.innerHTML = `<strong>${header}:</strong> ${stringValue}`;
-            }
-            item.appendChild(element);
-          });
-          carouselItemsContainer.appendChild(item);
+          orderResultsContainer.appendChild(orderElement);
         });
-
-        // Attach event listeners only once
-        attachNavigationListeners(finalCarouselData);
-        updateCarousel(currentItemIndex, finalCarouselData);
         hideSpinner();
       }
 
@@ -326,11 +295,11 @@
           btnTab3.addEventListener("click", function () {
             showSpinner();
             google.script.run
-              .withSuccessHandler(populateCarousel)
+              .withSuccessHandler(populateResults)
               .withFailureHandler(function () {
                 showSpinner();
               })
-              .getResultsData();
+              .getOrders();
           });
         } else {
           console.log("Element with ID btnTab3 not found.");
@@ -606,7 +575,7 @@
                   document.getElementById("invInput").value = null;
                   document.getElementById("result").innerHTML = "";
                   document.getElementById("result1").innerHTML = "";
-                  lastResult = null
+                  lastResult = null;
                   html5QrcodeScanner
                     .clear()
                     .then(() => {
