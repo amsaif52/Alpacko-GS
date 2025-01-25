@@ -203,6 +203,60 @@
         hideSpinner();
       }
 
+      function populateResults(data) {
+        // Destructure data to get finalCarouselData and headersOrder
+        const { finalCarouselData, headersOrder } = data;
+        const carouselItemsContainer =
+          document.getElementById("carousel-items");
+        carouselItemsContainer.innerHTML = ""; // Clear existing items
+
+        finalCarouselData?.forEach((row, index) => {
+          const item = document.createElement("div");
+          item.className = "carousel-item";
+          item.style.display = index === 0 ? "block" : "none"; // Only show the first item initially
+
+          // Iterate based on headersOrder to preserve order
+          headersOrder.forEach((header) => {
+            const value = row[header];
+            const element = document.createElement("div");
+            const stringValue = value?.toString() ?? "";
+
+            // Check if the string is an image URL
+            if (isImageUrl(stringValue)) {
+              const img = document.createElement("img");
+              img.src = stringValue;
+              img.alt = header;
+              img.style.maxWidth = "100%"; // Ensure the image fits in the carousel
+              img.style.height = "auto"; // Keep the aspect ratio
+              element.appendChild(img);
+            } else if (stringValue.startsWith("http")) {
+              // For non-image URLs, create a link
+              const link = document.createElement("a");
+              link.href = stringValue;
+              link.textContent = stringValue; // Or any other text indicating it's a link
+              link.target = "_blank"; // Open in new tab
+
+              // Create a container for the label and the link
+              const container = document.createElement("div");
+              container.innerHTML = `<strong>${header}:</strong> `;
+              container.appendChild(link); // Append the link element to the container
+
+              element.appendChild(container); // Append the container to the element
+            } else {
+              // For non-URL content
+              element.innerHTML = `<strong>${header}:</strong> ${stringValue}`;
+            }
+            item.appendChild(element);
+          });
+          carouselItemsContainer.appendChild(item);
+        });
+
+        // Attach event listeners only once
+        attachNavigationListeners(finalCarouselData);
+        updateCarousel(currentItemIndex, finalCarouselData);
+        hideSpinner();
+      }
+
       // Helper function to check if a string is an image URL or a qr code or an image from Google Drive
       function isImageUrl(url) {
         return (
@@ -263,6 +317,23 @@
           });
         } else {
           console.log("Element with ID btnTab2 not found.");
+        }
+      });
+
+      document.addEventListener("DOMContentLoaded", function () {
+        var btnTab3 = document.getElementById("btnTab3");
+        if (btnTab3) {
+          btnTab3.addEventListener("click", function () {
+            showSpinner();
+            google.script.run
+              .withSuccessHandler(populateCarousel)
+              .withFailureHandler(function () {
+                showSpinner();
+              })
+              .getResultsData();
+          });
+        } else {
+          console.log("Element with ID btnTab3 not found.");
         }
       });
 
