@@ -135,17 +135,30 @@ function updateCellValueById(id, newValue) {
   for (let i = 1; i < columnValues.length; i++) {
     if (columnValues[i][0] === id) {
       const rowToUpdate = i + 1;
-      console.log(sheet
-        .getRange(rowToUpdate, columnNumberGetter("printColumn")))
       sheet
-        .getRange(rowToUpdate, columnNumberGetter("printColumn"))
-        .setValue(newValue?.printCheck ? 1 : 0);
+        .getRange(rowToUpdate, columnNumberGetter("etcNumberConfirmationColumn"))
+        .setValue(newValue?.etcInput);
+      sheet
+        .getRange(rowToUpdate, columnNumberGetter("recQtyColumn"))
+        .setValue(newValue?.recInput);
+      sheet
+        .getRange(rowToUpdate, columnNumberGetter("inventoryColumn"))
+        .setValue(newValue?.inventoryInput);
       sheet
         .getRange(rowToUpdate, columnNumberGetter("cutColumn"))
         .setValue(newValue?.cutCheck ? 1 : 0);
       sheet
+        .getRange(rowToUpdate, columnNumberGetter("printColumn"))
+        .setValue(newValue?.printCheck ? 1 : 0);
+      sheet
         .getRange(rowToUpdate, columnNumberGetter("glueColumn"))
         .setValue(newValue?.glueCheck ? 1 : 0);
+      sheet
+        .getRange(rowToUpdate, columnNumberGetter("damageColumn"))
+        .setValue(newValue?.damageInput);
+      sheet
+        .getRange(rowToUpdate, columnNumberGetter("skidNumberColumn"))
+        .setValue(newValue?.skidInput);
       sheet
         .getRange(rowToUpdate, columnNumberGetter("updatedAtColumn"))
         .setValue(new Date());

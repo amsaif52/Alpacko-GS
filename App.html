@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
     <?!= HtmlService.createHtmlOutputFromFile('Style').getContent(); ?>
@@ -29,7 +29,7 @@
     <!-- Tab 1: Capture Image -->
     <!-- <div id="tab1" class="tab-content"> -->
     <div id="tab1" class="tab-content">
-      <div id="qr-reader" style="width:700px"></div>
+      <div id="qr-reader" style="width: 700px"></div>
       <div id="qr-reader-results"></div>
 
       <!-- <video id="video" width="300" height="300" autoplay playsinline></video> -->
@@ -56,10 +56,10 @@
     </div>
 
     <!-- Tab 3: Placeholder Content -->
-    <div id="tab3" class="tab-content" style="display:none;">
-        <h1>Orders</h1> 
-        <div id="order-results"></div>
-    </div> 
+    <div id="tab3" class="tab-content" style="display: none">
+      <h1>Orders</h1>
+      <div id="order-results"></div>
+    </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
@@ -76,30 +76,34 @@
       const startCameraButton = document.getElementById("startCamera");
       let currentItemIndex = 0; // Moved outside to be globally accessible
 
-      const resultContainer = document.getElementById('qr-reader-results');
-      let lastResult, countResults = 0;
+      const resultContainer = document.getElementById("qr-reader-results");
+      let lastResult,
+        countResults = 0;
 
       function onScanSuccess(decodedText, decodedResult) {
-          if (decodedText !== lastResult) {
-              ++countResults;
-              lastResult = decodedText;
-              // Handle on success condition with the decoded message.
-              if (decodedText) {
-                google.script.run
-                  .withSuccessHandler(onQRCodeFound)
-                  .withFailureHandler(function (error) {
-                    hideSpinner();
-                    alert("Error in searchSheetForUrl:", error);
-                  })
-                  .searchPrimarySheet(decodedText);
-              }
-            
-              console.log(`Scan result ${decodedText}`, decodedResult);
+        console.log('Scanners:', decodedText, decodedResult);
+        if (decodedText !== lastResult) {
+          ++countResults;
+          lastResult = decodedText;
+          // Handle on success condition with the decoded message.
+          if (decodedText) {
+            google.script.run
+              .withSuccessHandler(onQRCodeFound)
+              .withFailureHandler(function (error) {
+                hideSpinner();
+                alert("Error in searchSheetForUrl:", error);
+              })
+              .searchPrimarySheet(decodedText);
           }
+
+          console.log(`Scan result ${decodedText}`, decodedResult);
+        }
       }
 
-      const html5QrcodeScanner = new Html5QrcodeScanner(
-          "qr-reader", { fps: 10, qrbox: 450 });
+      const html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", {
+        fps: 10,
+        qrbox: 450,
+      });
       html5QrcodeScanner.render(onScanSuccess);
 
       // Function to attempt to find the rear camera
@@ -439,7 +443,7 @@
           // Use setTimeout to allow UI update
           setTimeout(function () {
             var numberInput = parseFloat(
-              document.getElementById("numberInput").value,
+              document.getElementById("numberInput").value
             );
 
             var result = value - numberInput;
@@ -456,28 +460,30 @@
             hideSpinner();
           }, 10); // 10 milliseconds delay
         };
-        window.handleCheckboxChange =  function() {
+        window.handleCheckboxChange = function () {
           var checkbox = document.querySelectorAll("input.checkbox");
           console.log(checkbox);
-          for(let i = 0; i < checkbox.length; i++) {
-              if (checkbox[i].checked) {
-                checkbox[i].setAttribute('checked', 'checked');
-              } else {
-                checkbox[i].removeAttribute('checked');
-              }
+          for (let i = 0; i < checkbox.length; i++) {
+            if (checkbox[i].checked) {
+              checkbox[i].setAttribute("checked", "checked");
+            } else {
+              checkbox[i].removeAttribute("checked");
+            }
           }
-        }
+        };
 
         window.submitNewValue = function () {
           showSpinner();
-          var calculatedValue = {printCheck:document.getElementById("printCheck").checked,
-             cutCheck:document.getElementById("cutCheck").checked,
-          glueCheck: document.getElementById("glueCheck").checked,
-          recInput: document.getElementById("recInput").value,
-          etcInput: document.getElementById("etcInput").value,
-          damageInput: document.getElementById("damageInput").value,
-          skidInput: document.getElementById("skidInput").value,
-          inventoryInput: document.getElementById("invInput").value,}
+          var calculatedValue = {
+            printCheck: document.getElementById("printCheck").checked,
+            cutCheck: document.getElementById("cutCheck").checked,
+            glueCheck: document.getElementById("glueCheck").checked,
+            recInput: document.getElementById("recInput").value,
+            etcInput: document.getElementById("etcInput").value,
+            damageInput: document.getElementById("damageInput").value,
+            skidInput: document.getElementById("skidInput").value,
+            inventoryInput: document.getElementById("invInput").value,
+          };
           // var calculatedValue = document.getElementById("resultBox").value;
 
           if (calculatedValue === "") {
@@ -498,23 +504,49 @@
 
                 // Directly update the elements by IDs
                 document.getElementById("infoID").innerHTML = updatedRowData[0]; // ID
-                document.getElementById("infoName").innerHTML = updatedRowData[1]; // ID
+                document.getElementById("infoName").innerHTML =
+                  updatedRowData[1]; // ID
                 document.getElementById("infoRecQty").innerHTML =
-                  updatedRowData[1].recInput; 
+                  updatedRowData[1].recInput;
                 document.getElementById("infoEtcQty").innerHTML =
                   updatedRowData[1].etcInput; // Value
                 document.getElementById("infoInventory").innerHTML =
-                updatedRowData[1].invInput; // Value
+                  updatedRowData[1].invInput; // Value
                 document.getElementById("infoPrint").innerHTML =
-                updatedRowData[1].printCheck ? 'Completed': 'Not Completed'; // Value
-                document.getElementById("infoCut").innerHTML =
-                updatedRowData[1].cutCheck ? 'Completed': 'Not Completed'; // Value
+                  updatedRowData[1].printCheck ? "Completed" : "Not Completed"; // Value
+                document.getElementById("infoCut").innerHTML = updatedRowData[1]
+                  .cutCheck
+                  ? "Completed"
+                  : "Not Completed"; // Value
                 document.getElementById("infoGlue").innerHTML =
-                updatedRowData[1].glueCheck ? 'Completed': 'Not Completed'; // Value
+                  updatedRowData[1].glueCheck ? "Completed" : "Not Completed"; // Value
                 document.getElementById("infoUpdatedAt").innerHTML =
                   updatedRowData[2]; // Updated At
 
-                  hideUpdate()
+                setTimeout(function () {
+                  hideUpdate();
+                  document.getElementById("printCheck").checked = false;
+                  document.getElementById("cutCheck").checked = false;
+                  document.getElementById("glueCheck").checked = false;
+                  document.getElementById("recInput").value = null;
+                  document.getElementById("etcInput").value = null;
+                  document.getElementById("damageInput").value = null;
+                  document.getElementById("skidInput").value = null;
+                  document.getElementById("invInput").value = null;
+                  document.getElementById("result").innerHTML = "";
+                  document.getElementById("result1").innerHTML = "";
+                  lastResult = null
+                  html5QrcodeScanner
+                    .clear()
+                    .then(() => {
+                      console.log("QR Code scanner reset successfully.");
+                      // Optionally, reinitialize the scanner
+                      html5QrcodeScanner.render(onScanSuccess);
+                    })
+                    .catch((error) => {
+                      console.error("Failed to reset QR Code scanner:", error);
+                    });
+                }, 3000);
               } else {
                 // Handle the case where the data is not as expected
                 console.error("Updated data format is incorrect");
@@ -546,13 +578,13 @@
           rowData[4] +
           "</span></p>" +
           '<p class="info-item"><span class="info-label">Print:</span> <span id="infoPrint">' +
-          (rowData[5] ? 'Completed' : 'Not Completed') +
+          (rowData[5] ? "Completed" : "Not Completed") +
           "</span></p>" +
           '<p class="info-item"><span class="info-label">Cut:</span> <span id="infoCut">' +
-          (rowData[6] ? 'Completed' : 'Not Completed') +
+          (rowData[6] ? "Completed" : "Not Completed") +
           "</span></p>" +
           '<p class="info-item"><span class="info-label">Glue:</span> <span id="infoGlue">' +
-          (rowData[7] ? 'Completed' : 'Not Completed') +
+          (rowData[7] ? "Completed" : "Not Completed") +
           "</span></p>" +
           '<p class="info-item"><span class="info-label">Updated At:</span> <span id="infoUpdatedAt">' +
           rowData[8] +
@@ -567,16 +599,29 @@
         //   'New Value: <input type="number" inputmode="numeric" step="1" id="resultBox"><br>' +
         //   '<button onclick="submitNewValue()">Submit New Quantity</button>';
 
-        var displayText1 = '<div>ETC# Confirmation: <br><input type="number" inputmode="numeric" step="1" id="etcInput" min="0"></div>';
-        displayText1 += '<div>Rec Qty: <br><input type="number" inputmode="numeric" step="1" id="recInput" min="0"></div>';
-        displayText1 += '<div>Inventory: <br><input type="number" inputmode="numeric" step="1" id="invInput" min="0"></div>';
-        displayText1 += '<div class="checkboxStatus"><div>Print: <input type="checkbox" class="checkbox" id="printCheck" ' + (rowData[5] ? 'checked' : '') + '></div>';
-        displayText1 += '<div>Cut: <input type="checkbox" class="checkbox" id="cutCheck" ' + (rowData[6] ? 'checked' : '') + '></div>';
-        displayText1 += '<div>Glue: <input type="checkbox" class="checkbox" id="glueCheck" ' + (rowData[7] ? 'checked' : '') + '></div></div>';
-        displayText1 += '<div>Damage: <br><input type="number" inputmode="numeric" step="1" id="damageInput" min="0"></div>';
-        displayText1 += '<div>Skid#: <br><input type="number" inputmode="numeric" step="1" id="skidInput" min="0"></div>';
+        var displayText1 =
+          '<div>ETC# Confirmation: <br><input type="number" inputmode="numeric" step="1" id="etcInput" min="0"></div>';
+        displayText1 +=
+          '<div>Rec Qty: <br><input type="number" inputmode="numeric" step="1" id="recInput" min="0"></div>';
+        displayText1 +=
+          '<div>Inventory: <br><input type="number" inputmode="numeric" step="1" id="invInput" min="0"></div>';
+        displayText1 +=
+          '<div class="checkboxStatus"><div>Print: <input type="checkbox" class="checkbox" id="printCheck" ' +
+          (rowData[5] ? "checked" : "") +
+          "></div>";
+        displayText1 +=
+          '<div>Cut: <input type="checkbox" class="checkbox" id="cutCheck" ' +
+          (rowData[6] ? "checked" : "") +
+          "></div>";
+        displayText1 +=
+          '<div>Glue: <input type="checkbox" class="checkbox" id="glueCheck" ' +
+          (rowData[7] ? "checked" : "") +
+          "></div></div>";
+        displayText1 +=
+          '<div>Damage: <br><input type="number" inputmode="numeric" step="1" id="damageInput" min="0"></div>';
+        displayText1 +=
+          '<div>Skid#: <br><input type="number" inputmode="numeric" step="1" id="skidInput" min="0"></div>';
 
-        
         displayText1 += '<button onclick="submitNewValue()">Submit</button>';
 
         document.getElementById("result1").innerHTML = displayText1;
