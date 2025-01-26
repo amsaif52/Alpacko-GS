@@ -5,7 +5,6 @@
     <?!= HtmlService.createHtmlOutputFromFile('CatalogStyle').getContent(); ?>
   </head>
   <body>
-    <h1>Inventory QR</h1>
     <div id="overlay" style="display: none">
       <div id="spinner"></div>
     </div>
@@ -18,38 +17,26 @@
         Scan
       </button>
       <button id="btnTab2" class="tab-button" onclick="showTab('tab2')">
-        Catalog
+        Inventory
       </button>
       <button id="btnTab3" class="tab-button" onclick="showTab('tab3')">
         Orders
       </button>
-      <!-- <button id="btnTab3" class="tab-button" onclick="showTab('tab3')">XYZ</button> -->
     </div>
 
     <!-- Tab 1: Capture Image -->
-    <!-- <div id="tab1" class="tab-content"> -->
     <div id="tab1" class="tab-content">
       <div id="qr-reader" style="width: 700px"></div>
       <div id="qr-reader-results"></div>
-
-      <!-- <video id="video" width="300" height="300" autoplay playsinline></video> -->
-      <!-- <video id="video" width="640" height="480" autoplay playsinline></video> -->
-
-      <!-- <button id="startCamera">Start Camera</button> -->
-      <!-- <button id="capture">Scan</button> -->
-      <!-- <button id="activateButton">Activate</button> -->
       <div id="result" style="margin-top: 20px"></div>
       <div id="result1" style="margin-top: 20px"></div>
     </div>
-
-    <!-- <canvas id="canvas" width="300" height="300" style="display: none"></canvas> -->
 
     <!-- Tab 2: Carousel Content -->
     <div id="tab2" class="tab-content" style="display: none">
       <div id="carousel" class="carousel">
         <button class="carousel-button prev">←</button>
         <div id="carousel-items" class="carousel-items">
-          <!-- Items will be dynamically inserted here -->
         </div>
         <button class="carousel-button next">→</button>
       </div>
@@ -63,18 +50,15 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
-    <!-- <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script> -->
     <script src="https://unpkg.com/html5-qrcode"></script>
-    <!-- Embed SortableJS -->
 
     <script>
       const video = document.getElementById("video");
       const canvas = document.getElementById("canvas");
-      // const context = canvas.getContext("2d");
       const captureButton = document.getElementById("capture");
       const activateButton = document.getElementById("activateButton");
       const startCameraButton = document.getElementById("startCamera");
-      let currentItemIndex = 0; // Moved outside to be globally accessible
+      let currentItemIndex = 0;
 
       const resultContainer = document.getElementById("qr-reader-results");
       let lastResult,
@@ -85,7 +69,6 @@
         if (decodedText !== lastResult) {
           ++countResults;
           lastResult = decodedText;
-          // Handle on success condition with the decoded message.
           if (decodedText) {
             google.script.run
               .withSuccessHandler(onQRCodeFound)
@@ -106,90 +89,41 @@
       });
       html5QrcodeScanner.render(onScanSuccess);
 
-      // Function to attempt to find the rear camera
-      // function getRearCamera(devices) {
-      //   const rearCamera = devices.find((device) => {
-      //     return (
-      //       device.kind === "videoinput" &&
-      //       device.label.toLowerCase().includes("back")
-      //     );
-      //   });
-      //   return rearCamera ? rearCamera.deviceId : null;
-      // }
-
-      // startCameraButton.addEventListener("click", function () {
-      //   let constraints = {};
-
-      //   // Detect mobile device
-      //   const isMobile =
-      //     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      //       navigator.userAgent,
-      //     );
-
-      //   if (isMobile) {
-      //     // Prefer the back camera on mobile devices
-      //     constraints = { video: { facingMode: "environment" } };
-      //   } else {
-      //     // For desktop, get any available camera
-      //     constraints = { video: true };
-      //   }
-
-      //   // Access the camera
-      //   navigator.mediaDevices
-      //     .getUserMedia(constraints)
-      //     .then(function (stream) {
-      //       const video = document.getElementById("video");
-      //       video.srcObject = stream;
-      //       video.onloadedmetadata = function (e) {
-      //         video.play();
-      //       };
-      //     })
-      //     .catch(function (err) {
-      //       console.log(err.name + ": " + err.message);
-      //     });
-      // });
-
       function populateCarousel(data) {
-        // Destructure data to get finalCarouselData and headersOrder
         const { finalCarouselData, headersOrder } = data;
         const carouselItemsContainer =
           document.getElementById("carousel-items");
-        carouselItemsContainer.innerHTML = ""; // Clear existing items
+        carouselItemsContainer.innerHTML = "";
 
         finalCarouselData?.forEach((row, index) => {
           const item = document.createElement("div");
           item.className = "carousel-item";
-          item.style.display = index === 0 ? "block" : "none"; // Only show the first item initially
+          item.style.display = index === 0 ? "block" : "none";
 
-          // Iterate based on headersOrder to preserve order
           headersOrder.forEach((header) => {
             const value = row[header];
             const element = document.createElement("div");
             const stringValue = value?.toString() ?? "";
 
-            // Check if the string is an image URL
             if (isImageUrl(stringValue)) {
               const img = document.createElement("img");
               img.src = stringValue;
               img.alt = header;
-              img.style.maxWidth = "100%"; // Ensure the image fits in the carousel
-              img.style.height = "auto"; // Keep the aspect ratio
+              img.style.maxWidth = "100%";
+              img.style.height = "auto";
               element.appendChild(img);
             } else if (stringValue.startsWith("http")) {
-              // For non-image URLs, create a link
               const link = document.createElement("a");
               link.href = stringValue;
-              link.textContent = stringValue; // Or any other text indicating it's a link
-              link.target = "_blank"; // Open in new tab
+              link.textContent = stringValue;
+              link.target = "_blank";
 
-              // Create a container for the label and the link
               const container = document.createElement("div");
               container.innerHTML = `<strong>${header}:</strong> `;
-              container.appendChild(link); // Append the link element to the container
+              container.appendChild(link);
 
-              element.appendChild(container); // Append the container to the element
+              element.appendChild(container);
             } else {
-              // For non-URL content
               element.innerHTML = `<strong>${header}:</strong> ${stringValue}`;
             }
             item.appendChild(element);
@@ -197,18 +131,16 @@
           carouselItemsContainer.appendChild(item);
         });
 
-        // Attach event listeners only once
         attachNavigationListeners(finalCarouselData);
         updateCarousel(currentItemIndex, finalCarouselData);
         hideSpinner();
       }
 
       function populateResults(data) {
-        // Destructure data to get finalCarouselData and headersOrder
         const { finalData } = data;
 
         const orderResultsContainer = document.getElementById("order-results");
-        orderResultsContainer.innerHTML = ""; // Clear existing items
+        orderResultsContainer.innerHTML = "";
         finalData.forEach((order) => {
           const orderElement = document.createElement("div");
           orderElement.className = "order-item";
@@ -226,7 +158,6 @@
         hideSpinner();
       }
 
-      // Helper function to check if a string is an image URL or a qr code or an image from Google Drive
       function isImageUrl(url) {
         return (
           /\.(jpg|jpeg|png|gif)$/i.test(url) ||
@@ -524,7 +455,6 @@
             skidInput: document.getElementById("skidInput").value,
             inventoryInput: document.getElementById("invInput").value,
           };
-          // var calculatedValue = document.getElementById("resultBox").value;
 
           if (calculatedValue === "") {
             hideSpinner();
@@ -536,43 +466,10 @@
               console.log("Updated row data:", updatedRowData);
               hideSpinner();
               showUpdate();
-              // Assuming updatedRowData is an array with 3 elements
               if (updatedRowData.length) {
-                // Clear input
-                // document.getElementById("numberInput").value = "";
-                // document.getElementById("resultBox").value = "";
-
-                // Directly update the elements by IDs
-                document.getElementById("infoID").innerHTML = updatedRowData[0]; // ID
-                document.getElementById("infoName").innerHTML =
-                  updatedRowData[1]; // ID
-                document.getElementById("infoRecQty").innerHTML =
-                  updatedRowData[1].recInput;
-                document.getElementById("infoEtcQty").innerHTML =
-                  updatedRowData[1].etcInput; // Value
-                document.getElementById("infoInventory").innerHTML =
-                  updatedRowData[1].invInput; // Value
-                document.getElementById("infoPrint").innerHTML =
-                  updatedRowData[1].printCheck ? "Completed" : "Not Completed"; // Value
-                document.getElementById("infoCut").innerHTML = updatedRowData[1]
-                  .cutCheck
-                  ? "Completed"
-                  : "Not Completed"; // Value
-                document.getElementById("infoGlue").innerHTML =
-                  updatedRowData[1].glueCheck ? "Completed" : "Not Completed"; // Value
-                document.getElementById("infoUpdatedAt").innerHTML =
-                  updatedRowData[2]; // Updated At
 
                 setTimeout(function () {
                   hideUpdate();
-                  document.getElementById("printCheck").checked = false;
-                  document.getElementById("cutCheck").checked = false;
-                  document.getElementById("glueCheck").checked = false;
-                  document.getElementById("recInput").value = null;
-                  document.getElementById("etcInput").value = null;
-                  document.getElementById("damageInput").value = null;
-                  document.getElementById("skidInput").value = null;
-                  document.getElementById("invInput").value = null;
                   document.getElementById("result").innerHTML = "";
                   document.getElementById("result1").innerHTML = "";
                   lastResult = null;
@@ -580,7 +477,6 @@
                     .clear()
                     .then(() => {
                       console.log("QR Code scanner reset successfully.");
-                      // Optionally, reinitialize the scanner
                       html5QrcodeScanner.render(onScanSuccess);
                     })
                     .catch((error) => {
@@ -588,7 +484,6 @@
                     });
                 }, 3000);
               } else {
-                // Handle the case where the data is not as expected
                 console.error("Updated data format is incorrect");
               }
             })
@@ -599,7 +494,7 @@
             .addTransaction(rowData, calculatedValue);
         };
 
-        var value = rowData[1]; // Assuming value is in the second column
+        var value = rowData[1];
         var displayText =
           '<div class="info-container">' +
           '<p class="info-item"><span class="info-label">Id:</span> <span id="infoID">' +
@@ -633,12 +528,6 @@
 
         document.getElementById("result").innerHTML = displayText;
 
-        // displayText +=
-        //   'Enter a number to reduce by: <input type="number" inputmode="numeric" step="1" id="numberInput" min="0"><br>' +
-        //   '<button onclick="calculateResult()">Subtract Quantity</button><br>' +
-        //   'New Value: <input type="number" inputmode="numeric" step="1" id="resultBox"><br>' +
-        //   '<button onclick="submitNewValue()">Submit New Quantity</button>';
-
         var displayText1 =
           '<div>ETC# Confirmation: <br><input type="number" inputmode="numeric" step="1" id="etcInput" min="0"></div>';
         displayText1 +=
@@ -665,8 +554,6 @@
         displayText1 += '<button onclick="submitNewValue()">Submit</button>';
 
         document.getElementById("result1").innerHTML = displayText1;
-        // applyMask();
-        // applyMask3();
       }
     </script>
   </body>

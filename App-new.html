@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <?!= HtmlService.createHtmlOutputFromFile('Style').getContent(); ?>
+  </head>
+  <body>
+    <div id="overlay" style="display: none">
+      <div id="spinner"></div>
+    </div>
+    <div id="confirmation" style="display: none">
+      <div id="updated">UPDATED!!!</div>
+    </div>
+    <div id="tab-navigation">
+      <button id="btnTab1" class="tab-button" onclick="showTab('tab1')">
+        Scan
+      </button>
+      <button id="btnTab2" class="tab-button" onclick="showTab('tab2')">
+        Inventory
+      </button>
+      <button id="btnTab3" class="tab-button" onclick="showTab('tab3')">
+        Orders
+      </button>
+    </div>
+    <div id="tab1" class="tab-content">
+      <div id="qr-reader" style="width: 700px"></div>
+      <div id="qr-reader-results"></div>
+      <div id="result" style="margin-top: 20px"></div>
+      <div id="result1" style="margin-top: 20px"></div>
+    </div>
+    <div id="tab2" class="tab-content" style="display: none">
+      <div id="inventory-results"></div>
+    </div>
+    <div id="tab3" class="tab-content" style="display: none">
+      <div id="order-results"></div>
+      <div id="order-print"></div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script>
+      let lastResult,
+        countResults = 0;
+      function onScanSuccess(decodedText, decodedResult) {
+        if (decodedText !== lastResult) {
+          ++countResults;
+          lastResult = decodedText;
+          if (decodedText) {
+            google.script.run
+              .withSuccessHandler(onQRCodeFound)
+              .withFailureHandler(function (error) {
+                hideSpinner();
+                alert("Error in searchSheetForUrl:", error);
+              })
+              .searchPrimarySheet(decodedText);
+          }
+        }
+      }
+
+      function showSpinner() {
+        document.getElementById("overlay").style.display = "flex";
+      }
+
+      function hideSpinner() {
+        document.getElementById("overlay").style.display = "none";
+      }
+
+      function showUpdate() {
+        document.getElementById("confirmation").style.display = "flex";
+      }
+
+      function hideUpdate() {
+        document.getElementById("confirmation").style.display = "none";
+      }
+
+      function showTab(tabId) {
+        // Hide all tab contents
+        let tabs = document.getElementsByClassName("tab-content");
+        for (var i = 0; i < tabs.length; i++) {
+          tabs[i].style.display = "none";
+        }
+        document.getElementById(tabId).style.display = "flex";
+        document.getElementById(tabId).style.width = "95%";
+
+        // Update tab button styles
+        let tabButtons = document.getElementsByClassName("tab-button");
+        for (var i = 0; i < tabButtons.length; i++) {
+          tabButtons[i].classList.remove("tab-button-active");
+        }
+        document
+          .getElementById("btn" + tabId)
+          .classList.add("tab-button-active");
+      }
+
+      function printImageAndText() {
+        const printContents = document.getElementById("printContent").innerHTML;
+        const originalContents = document.body.innerHTML;
+
+        // Replace the page content with the printable content
+        document.body.innerHTML = printContents;
+
+        // Trigger the print dialog
+        window.print();
+
+        // Restore the original page content
+        document.body.innerHTML = originalContents;
+      }
+
+      function populateResults(data) {
+        const { finalData } = data;
+
+        const orderResultsContainer = document.getElementById("order-results");
+        orderResultsContainer.innerHTML = "";
+        finalData.forEach((order) => {
+          const orderElement = document.createElement("div");
+          orderElement.className = "order-item";
+          const printElement = document.createElement("div");
+
+          const fields = [
+            { label: "Vendor PO #", value: order["Vendor PO#"] },
+            { label: "Vendor Name", value: order["Vendor Name"] },
+            { label: "ETC/Wall", value: order["ETC/Wall"] },
+            { label: "Length", value: order["Length"] },
+            { label: "Breadth", value: order["Breadth"] },
+            { label: "Width", value: order["Width"] },
+            { label: "Flute", value: order["Flute"] },
+            { label: "Expected Qty", value: order["Expected Qty"] },
+            { label: "Arrival Date", value: order["Arrival Date"] },
+          ];
+
+          const printFields = [
+            order["QR Code"],
+            order["Customer"],
+            order["Sheet Width"],
+            order["Sheet Height"],
+            order["ETC/Wall"],
+          ];
+
+          fields.forEach((field) => {
+            const p = document.createElement("p");
+            p.innerHTML = `<strong>${field.label}:</strong> ${field.value}`;
+            orderElement.appendChild(p);
+          });
+
+          printFields.forEach((field, index) => {
+            if (index === 0) {
+              const img = document.createElement("img");
+              img.src = field;
+              img.style.width = "300px";
+              printElement.appendChild(img);
+            } else {
+              const p = document.createElement("p");
+              p.innerHTML = `<strong>${fields[index].label}:</strong> ${field}`;
+              printElement.appendChild(p);
+            }
+          });
+
+          const printButton = document.createElement("button");
+          printButton.innerText = "Print";
+          printButton.onclick = function () {
+            const printContents = printElement.innerHTML;
+            const originalContents = document.body.innerHTML;
+
+            document.body.innerHTML = printContents;
+            window.print();
+            document.body.innerHTML = originalContents;
+          };
+
+          orderElement.appendChild(printButton);
+
+          orderResultsContainer.appendChild(orderElement);
+        });
+        hideSpinner();
+      }
+
+      function populateInventoryResults(data) {
+        const { finalData } = data;
+
+        const orderResultsContainer = document.getElementById("inventory-results");
+        orderResultsContainer.innerHTML = "";
+        finalData.forEach((order) => {
+          const orderElement = document.createElement("div");
+          orderElement.className = "inventory-item";
+          const printElement = document.createElement("div");
+
+          const fields = [
+            { label: "Vendor PO #", value: order["Vendor PO#"] },
+            { label: "Vendor Name", value: order["Vendor Name"] },
+            { label: "ETC/Wall", value: order["ETC/Wall"] },
+            { label: "Length", value: order["Length"] },
+            { label: "Breadth", value: order["Breadth"] },
+            { label: "Width", value: order["Width"] },
+            { label: "Flute", value: order["Flute"] },
+            { label: "Sheet Cost", value: order["Sheet Cost"] },
+            { label: "Customer", value: order["Customer"] },
+            { label: "Total Inventory", value: order["Total Inventory"] },
+            { label: "Cost Per Inventory", value: (order["Sheet Cost"] ?? 0) * (order["Total Inventory"] ?? 0) },
+            { label: "Last Updated", value: order["Last Updated"] },
+          ];
+
+          fields.forEach((field) => {
+            const p = document.createElement("p");
+            p.innerHTML = `<strong>${field.label}:</strong> ${field.value}`;
+            orderElement.appendChild(p);
+          });
+
+          orderResultsContainer.appendChild(orderElement);
+        });
+        hideSpinner();
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        var btnTab3 = document.getElementById("btnTab3");
+        if (btnTab3) {
+          btnTab3.addEventListener("click", function () {
+            showSpinner();
+            google.script.run
+              .withSuccessHandler(populateResults)
+              .withFailureHandler(function () {
+                showSpinner();
+              })
+              .getOrders();
+          });
+        } else {
+          console.log("Element with ID btnTab3 not found.");
+        }
+      });
+
+      document.addEventListener("DOMContentLoaded", function () {
+        var btnTab2 = document.getElementById("btnTab2");
+        if (btnTab2) {
+          btnTab2.addEventListener("click", function () {
+            showSpinner();
+            google.script.run
+              .withSuccessHandler(populateInventoryResults)
+              .withFailureHandler(function () {
+                showSpinner();
+              })
+              .getInventoryOrders();
+          });
+        } else {
+          console.log("Element with ID btnTab2 not found.");
+        }
+      });
+
+      function onQRCodeFound(rowData) {
+        hideSpinner();
+        if (rowData) {
+          displayRowData(rowData);
+        } else {
+          document.getElementById("result").innerHTML =
+            "No match found in the sheet.";
+        }
+      }
+
+      const html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", {
+        fps: 10,
+        qrbox: 450,
+      });
+      html5QrcodeScanner.render(onScanSuccess);
+
+      function displayRowData(rowData) {
+        console.log("Row data:", rowData);
+        window.calculateResult = function () {
+          showSpinner();
+          setTimeout(function () {
+            var numberInput = parseFloat(
+              document.getElementById("numberInput").value
+            );
+
+            var result = value - numberInput;
+
+            result = result < 0 ? 0 : result;
+
+            if (!isNaN(result)) {
+              document.getElementById("resultBox").value = result;
+            } else {
+              document.getElementById("resultBox").value = "Invalid input";
+            }
+
+            hideSpinner();
+          }, 10);
+        };
+        window.handleCheckboxChange = function () {
+          var checkbox = document.querySelectorAll("input.checkbox");
+          console.log(checkbox);
+          for (let i = 0; i < checkbox.length; i++) {
+            if (checkbox[i].checked) {
+              checkbox[i].setAttribute("checked", "checked");
+            } else {
+              checkbox[i].removeAttribute("checked");
+            }
+          }
+        };
+
+        window.submitNewValue = function () {
+          showSpinner();
+          var calculatedValue = {
+            printCheckInput:
+              document.getElementById("printCheckInput").checked ?? false,
+            cutCheckInput:
+              document.getElementById("cutCheckInput").checked ?? false,
+            glueCheckInput:
+              document.getElementById("glueCheckInput").checked ?? false,
+            recInput: document.getElementById("recInput").value ?? 0,
+            etcInput: document.getElementById("etcInput").value ?? 0,
+            damageInput: document.getElementById("damageInput").value ?? 0,
+            skidInput: document.getElementById("skidInput").value ?? 0,
+            totalNumberBoxesInput:
+              document.getElementById("totalNumberBoxesInput").value ?? 0,
+            processSheetsInput:
+              document.getElementById("processSheetsInput").value ?? 0,
+            damageCommentsInput:
+              document.getElementById("damageCommentsInput").value ?? 0,
+          };
+
+          if (calculatedValue === "") {
+            hideSpinner();
+            return;
+          }
+          console.log("Calculated value:", calculatedValue, rowData);
+          google.script.run
+            .withSuccessHandler(function (updatedRowData) {
+              hideSpinner();
+              showUpdate();
+              console.log(updatedRowData);
+              if (updatedRowData.length) {
+                // document.getElementById("infoID").innerHTML = updatedRowData[0];
+                // document.getElementById("infoName").innerHTML =
+                //     updatedRowData[1];
+                // document.getElementById("infoRecQty").innerHTML =
+                //     updatedRowData[1].recInput;
+                // document.getElementById("infoEtcQty").innerHTML =
+                //     updatedRowData[1].etcInput;
+                // document.getElementById("infoInventory").innerHTML =
+                //     updatedRowData[1].invInput;
+                // document.getElementById("infoPrint").innerHTML =
+                //     updatedRowData[1].printCheck ? "Completed" : "Not Completed";
+                // document.getElementById("infoCut").innerHTML = updatedRowData[1]
+                //     .cutCheck
+                //     ? "Completed"
+                //     : "Not Completed";
+                // document.getElementById("infoGlue").innerHTML =
+                //     updatedRowData[1].glueCheck ? "Completed" : "Not Completed";
+                // document.getElementById("infoUpdatedAt").innerHTML =
+                //     updatedRowData[2];
+
+                setTimeout(function () {
+                  hideUpdate();
+                  document.getElementById("result").innerHTML = "";
+                  document.getElementById("result1").innerHTML = "";
+                  lastResult = null;
+                  html5QrcodeScanner
+                    .clear()
+                    .then(() => {
+                      console.log("QR Code scanner reset successfully.");
+                      html5QrcodeScanner.render(onScanSuccess);
+                    })
+                    .catch((error) => {
+                      console.error("Failed to reset QR Code scanner:", error);
+                    });
+                }, 3000);
+              } else {
+                console.error("Updated data format is incorrect");
+              }
+            })
+            .withFailureHandler(function (error) {
+              alert("Error in searchSheetForUrl:", error);
+              hideSpinner();
+            })
+            .addTransaction(rowData, calculatedValue);
+        };
+
+        var value = rowData[1];
+        var displayText =
+          '<table class="info-table">' +
+          '<tr><td class="info-label">Vendor PO #:</td><td>' +
+          rowData[0] +
+          '</td><td class="info-label">Vendor Name:</td><td>' +
+          rowData[1] +
+          "</td></tr>" +
+          '<tr><td class="info-label">Sku Id:</td><td>' +
+          rowData[2] +
+          '</td><td class="info-label">Etc Num:</td><td>' +
+          rowData[3] +
+          "</td></tr>" +
+          '<tr><td class="info-label">Length:</td><td>' +
+          rowData[4] +
+          '</td><td class="info-label">Breadth:</td><td>' +
+          rowData[5] +
+          "</td></tr>" +
+          '<tr><td class="info-label">Width:</td><td>' +
+          rowData[6] +
+          '</td><td class="info-label">Flute:</td><td>' +
+          rowData[7] +
+          "</td></tr>" +
+          '<tr><td class="info-label">Print:</td><td>' +
+          rowData[8] +
+          '</td><td class="info-label">Expected Qty:</td><td>' +
+          rowData[9] +
+          "</td></tr>" +
+          '<tr><td class="info-label">Arrival Date:</td><td>' +
+          rowData[10] +
+          '</td><td class="info-label">Customer:</td><td>' +
+          rowData[11] +
+          "</td></tr>" +
+          '<tr><td class="info-label">Sheet Width:</td><td>' +
+          rowData[12] +
+          '</td><td class="info-label">Sheet Height:</td><td>' +
+          rowData[13] +
+          "</td></tr>" +
+          '<tr><td class="info-label">Customer PO:</td><td>' +
+          rowData[14] +
+          '</td><td class="info-label">Customer PO Qty:</td><td>' +
+          rowData[15] +
+          "</td></tr>" +
+          '<tr><td class="info-label">Delivery Date:</td><td>' +
+          rowData[16] +
+          '</td><td class="info-label">Updated At:</td><td>' +
+          rowData[32] +
+          "</td></tr>";
+        ("</table>");
+
+        document.getElementById("result").innerHTML = displayText;
+
+        var displayText1 = `<div>ETC# Confirmation: <br><input type="number" value=${rowData[17]} inputmode="numeric" step="1" id="etcInput" min="0"></div>`;
+        displayText1 += `<div>Rec Qty: <br><input type="number" value=${rowData[20]} inputmode="numeric" step="1" id="recInput" min="0"></div>`;
+        displayText1 += `<div>Process Sheets: <br><input type="number" value=${rowData[21]} inputmode="numeric" step="1" id="processSheetsInput" min="0"></div>`;
+        displayText1 +=
+          '<div class="checkboxStatus"><div>Print: <input type="checkbox" class="checkbox" id="printCheckInput" ' +
+          (rowData[22] ? "checked" : "") +
+          "></div>";
+        displayText1 +=
+          '<div>Cut: <input type="checkbox" class="checkbox" id="cutCheckInput" ' +
+          (rowData[23] ? "checked" : "") +
+          "></div>";
+        displayText1 +=
+          '<div>Glue: <input type="checkbox" class="checkbox" id="glueCheckInput" ' +
+          (rowData[24] ? "checked" : "") +
+          "></div></div>";
+        displayText1 += `<div>Damage: <br><input type="number" value=${rowData[25]} inputmode="numeric" step="1" id="damageInput" min="0"></div>`;
+        displayText1 += `<div>Total Number of Boxes: <br><input type="number" value=${rowData[27]} inputmode="numeric" step="1" id="totalNumberBoxesInput" min="0"></div>`;
+        displayText1 += `<div>Skid#: <br><input type="number" value=${rowData[28]} inputmode="numeric" step="1" id="skidInput" min="0"></div>`;
+        displayText1 += `<div>Damage Comments: <br><textarea id="damageCommentsInput">${rowData[26]}</textarea></div>`;
+
+        displayText1 += '<button onclick="submitNewValue()">Submit</button>';
+
+        document.getElementById("result1").innerHTML = displayText1;
+      }
+    </script>
+  </body>
+</html>

@@ -1,7 +1,7 @@
 class Database {
-  constructor() {
+  constructor(sheetName) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    this.sheet = ss.getSheetByName(Config.dbSheet);
+    this.sheet = ss.getSheetByName(sheetName);
   }
 
   // Create a new row

@@ -1,6 +1,6 @@
 // config/ global vars
 const Config = {
-  mainSheet: PropertiesService.getScriptProperties().getProperty("primarySheet"),
+  mainSheet: "Orders,
   dbSheet: "Transaction",
 };
 
@@ -143,22 +143,28 @@ function updateCellValueById(id, newValue) {
         .setValue(newValue?.recInput);
       sheet
         .getRange(rowToUpdate, columnNumberGetter("inventoryColumn"))
-        .setValue(newValue?.inventoryInput);
+        .setValue(newValue?.processSheetsInput);
       sheet
         .getRange(rowToUpdate, columnNumberGetter("cutColumn"))
-        .setValue(newValue?.cutCheck ? 1 : 0);
+        .setValue(newValue?.cutCheckInput ? 1 : 0);
       sheet
         .getRange(rowToUpdate, columnNumberGetter("printColumn"))
-        .setValue(newValue?.printCheck ? 1 : 0);
+        .setValue(newValue?.printCheckInput ? 1 : 0);
       sheet
         .getRange(rowToUpdate, columnNumberGetter("glueColumn"))
-        .setValue(newValue?.glueCheck ? 1 : 0);
+        .setValue(newValue?.glueCheckInput ? 1 : 0);
       sheet
         .getRange(rowToUpdate, columnNumberGetter("damageColumn"))
         .setValue(newValue?.damageInput);
       sheet
         .getRange(rowToUpdate, columnNumberGetter("skidNumberColumn"))
         .setValue(newValue?.skidInput);
+      sheet
+        .getRange(rowToUpdate, columnNumberGetter("skidNumberColumn"))
+        .setValue(newValue?.totalNumberBoxesInput);
+      sheet
+        .getRange(rowToUpdate, columnNumberGetter("skidNumberColumn"))
+        .setValue(newValue?.damageCommentsInput);
       sheet
         .getRange(rowToUpdate, columnNumberGetter("updatedAtColumn"))
         .setValue(new Date());
