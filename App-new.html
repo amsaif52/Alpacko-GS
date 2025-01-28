@@ -268,7 +268,6 @@
       html5QrcodeScanner.render(onScanSuccess);
 
       function displayRowData(rowData) {
-        console.log("Row data:", rowData);
         window.calculateResult = function () {
           showSpinner();
           setTimeout(function () {
@@ -324,11 +323,7 @@
               document.getElementById("boxLocationInput").value ?? 0,
           };
 
-          if (calculatedValue === "") {
-            hideSpinner();
-            return;
-          }
-          console.log("Calculated value:", calculatedValue, rowData);
+          
           google.script.run
             .withSuccessHandler(function (updatedRowData) {
               hideSpinner();
@@ -348,7 +343,7 @@
                     .catch((error) => {
                       console.error("Failed to reset QR Code scanner:", error);
                     });
-                }, 3000);
+                }, 5000);
               } else {
                 console.error("Updated data format is incorrect");
               }
@@ -359,6 +354,42 @@
             })
             .addTransaction(rowData, calculatedValue);
         };
+
+        window.updateInventory = function() {
+          showSpinner();
+          var calculatedValue = document.getElementById("updateInventoryInput").value ?? 0;
+          if (!calculatedValue) {
+            alert("Please enter a value to update inventory");
+            hideSpinner();
+            return;
+          }
+          if (rowData[18].toString() === calculatedValue.toString()) {
+            alert("Inventory is already updated");
+            hideSpinner();
+            return;
+          }
+          google.script.run
+            .withSuccessHandler(function (updatedRowData) {
+              hideSpinner();
+              showUpdate("INVENTORY UPDATED!!!");
+              console.log(updatedRowData,'***');
+              if (updatedRowData.length) {
+                setTimeout(function () {
+                  document.getElementById("currInv").innerText = updatedRowData[1];
+                  document.getElementById("recInput").value = updatedRowData[0];
+                  document.getElementById("updateInventoryInput").value = 0;
+                  hideUpdate();
+                }, 5000);
+              } else {
+                console.error("Updated data format is incorrect");
+              }
+            })
+            .withFailureHandler(function (error) {
+              alert("Error in searchSheetForUrl:", error);
+              hideSpinner();
+            })
+            .updateInv(rowData,"totalInventory","recQty", parseFloat(calculatedValue));
+        }
 
         window.submitShipped = function () {
           showSpinner();
@@ -383,11 +414,7 @@
               document.getElementById("boxLocationInput").value ?? 0,
           };
 
-          if (calculatedValue === "") {
-            hideSpinner();
-            return;
-          }
-          console.log("Calculated value:", calculatedValue, rowData);
+          
           google.script.run
             .withSuccessHandler(function (updatedRowData) {
               hideSpinner();
@@ -407,7 +434,7 @@
                     .catch((error) => {
                       console.error("Failed to reset QR Code scanner:", error);
                     });
-                }, 3000);
+                }, 5000);
               } else {
                 console.error("Updated data format is incorrect");
               }
@@ -486,13 +513,15 @@
           '<div>Glue: <input type="checkbox" class="checkbox" id="glueCheckInput" ' +
           (rowData[24] ? "checked" : "") +
           "></div></div>";
+          displayText1 +=`<div>Current Inventory: <br><span id="currInv">${rowData[18]}</span></div>`;
+        displayText1 += `<div>Change Inventory: <br><div><input type="number" inputmode="numeric" step="1" id="updateInventoryInput" min="0"><button onclick="updateInventory()">Update Inventory</button></div></div>`;
         displayText1 += `<div>Damage: <br><input type="number" value=${rowData[25]} inputmode="numeric" step="1" id="damageInput" min="0"></div>`;
         displayText1 += `<div>Total Number of Boxes: <br><input type="number" value=${rowData[27]} inputmode="numeric" step="1" id="totalNumberBoxesInput" min="0"></div>`;
         displayText1 += `<div>Skid#: <br><input type="number" value=${rowData[28]} inputmode="numeric" step="1" id="skidInput" min="0"></div>`;
         displayText1 += `<div>Box Location: <br><input type="text" value=${rowData[29]} inputmode="numeric" step="1" id="boxLocationInput"></div>`;
         displayText1 += `<div>Damage Comments: <br><textarea id="damageCommentsInput">${rowData[26]}</textarea></div>`;
 
-        displayText1 += '<div class="button-group"><button onclick="submitNewValue()">Submit</button><button onclick="submitShipped()">Shipped</button></div>';
+        displayText1 += `<div class="button-group"><button onclick="submitNewValue()">Submit</button><button onclick="submitShipped()" disabled=${rowData[27] > 0 && rowData[28] > 0}>Shipped</button></div>`;
 
         document.getElementById("result1").innerHTML = displayText1;
       }

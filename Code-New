@@ -283,7 +283,7 @@ function addTransaction(rowData, newValue) {
   const [_, ...oldValue] = searchPrimarySheet(id);
   const db = new Database("Transaction");
   const updatedAt = new Date();
-  db.create(id, oldValue || 0, JSON.stringify(newValue), updatedAt);
+  db.create(id, JSON.stringify(oldValue || 0), JSON.stringify(newValue), updatedAt);
   updateCellValueById(id, newValue);
   return [id, newValue, new Date(updatedAt)?.toLocaleDateString()];
 }
@@ -385,6 +385,25 @@ function updateCellValueById(id, newValue) {
   }
 }
 
+function updateCellValueByKey(id, key, newValue) {
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = spreadsheet.getSheetByName(Config.mainSheet);
+  const lastRow = sheet.getLastRow();
+  const columnRange = sheet.getRange(1, columnNumberGetter("skuId"), lastRow);
+  const columnValues = columnRange.getValues();
+  const data = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < columnValues.length; i++) {
+    if (columnValues[i][0] === id) {
+      const rowToUpdate = i + 1;
+      sheet
+        .getRange(rowToUpdate, columnNumberGetter(key))
+        .setValue(newValue);
+      break;
+    }
+  }
+}
+
 function getOrders() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
     Config.mainSheet
@@ -454,4 +473,19 @@ function getInventoryOrders() {
       return val["Total Inventory"] > 0;
     });
   return { finalData };
+}
+
+function updateInv (rowData,key,key1,newValue) {
+  const id = rowData[2];
+  const [_, ...oldValue] = searchPrimarySheet(id);
+  const db = new Database("Transaction");
+  const updatedAt = new Date();
+  db.create(id, JSON.stringify(oldValue || 0), JSON.stringify(newValue), updatedAt);
+  let getDeductedInventory = oldValue[19];
+  if (newValue < oldValue[17]) {
+    getDeductedInventory += oldValue[17] - newValue;
+    updateCellValueByKey(id,key1, getDeductedInventory);
+  }
+  updateCellValueByKey(id,key, newValue);
+  return [getDeductedInventory, newValue];
 }
