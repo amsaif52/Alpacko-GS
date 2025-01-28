@@ -288,6 +288,26 @@ function addTransaction(rowData, newValue) {
   return [id, newValue, new Date(updatedAt)?.toLocaleDateString()];
 }
 
+function clearSheet(id) {
+  updateCellValueByKey(id, {
+    etcConfirmation: "",
+    recQty: "",
+    processSheets: "",
+    cutNumber: "",
+    printNumber: "",
+    glueNumber: "",
+    damageNumber: "",
+    skidNumber: "",
+    totalNumberBoxes: "",
+    damageComments: "",
+    boxLocation:"",
+    paperCost:"",
+    shippingCost:"",
+    opCost:"",
+    updatedAtColumn: "",
+  });
+}
+
 function shippedTransaction(rowData, newValue) {
   const id = rowData[2];
   const rowValue = searchPrimarySheet(id);
@@ -298,6 +318,8 @@ function shippedTransaction(rowData, newValue) {
   db1.createCols([rowValue[14],rowValue[15],rowValue[16],rowValue[34],rowValue[35],newValue.damageCommentsInput,newValue.totalNumberBoxesInput,rowValue[30],newValue.totalNumberBoxesInput*newValue.skidInput,updatedAt.toLocaleDateString()]);
   const db2 = new Database("Cost");
   db2.createCols([rowValue[14],rowValue[9],rowValue[36]*newValue.recInput,60+(newValue.skidInput - 1)*20,rowValue[37] + rowValue[38] + rowValue[39]* newValue.totalNumberBoxesInput, updatedAt.toLocaleDateString()]);
+
+  clearSheet(id);
   return [id, newValue, new Date(updatedAt)?.toLocaleDateString()];
 }
 
@@ -385,7 +407,7 @@ function updateCellValueById(id, newValue) {
   }
 }
 
-function updateCellValueByKey(id, key, newValue) {
+function updateCellValueByKey(id, keys) {
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = spreadsheet.getSheetByName(Config.mainSheet);
   const lastRow = sheet.getLastRow();
@@ -396,9 +418,14 @@ function updateCellValueByKey(id, key, newValue) {
   for (let i = 1; i < columnValues.length; i++) {
     if (columnValues[i][0] === id) {
       const rowToUpdate = i + 1;
-      sheet
-        .getRange(rowToUpdate, columnNumberGetter(key))
-        .setValue(newValue);
+      for(let k = 0; k < Object.keys(keys).length; k++){
+        const key = Object.keys(keys)[k];
+        Logger.log(key, keys[key]);
+        sheet
+          .getRange(rowToUpdate, columnNumberGetter(key))
+          .setValue(keys[key])
+          .setBackground("#FFFFFF"); 
+      }
       break;
     }
   }
@@ -484,8 +511,8 @@ function updateInv (rowData,key,key1,newValue) {
   let getDeductedInventory = oldValue[19];
   if (newValue < oldValue[17]) {
     getDeductedInventory += oldValue[17] - newValue;
-    updateCellValueByKey(id,key1, getDeductedInventory);
+    updateCellValueByKey(id,{[key1]:getDeductedInventory});
   }
-  updateCellValueByKey(id,key, newValue);
+  updateCellValueByKey(id,{[key]:newValue});
   return [getDeductedInventory, newValue];
 }

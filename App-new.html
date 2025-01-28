@@ -413,6 +413,11 @@
             boxLocationInput:
               document.getElementById("boxLocationInput").value ?? 0,
           };
+          if (calculatedValue.totalNumberBoxesInput && parseFloat(calculatedValue.totalNumberBoxesInput) <= 0 && calculatedValue.skidInput && parseFloat(calculatedValue.skidInput) <= 0) {
+            alert("Shipped button is blocked until total number of boxes and skid number are filled!");
+            hideSpinner();
+            return;
+          }
 
           
           google.script.run
@@ -521,7 +526,7 @@
         displayText1 += `<div>Box Location: <br><input type="text" value=${rowData[29]} inputmode="numeric" step="1" id="boxLocationInput"></div>`;
         displayText1 += `<div>Damage Comments: <br><textarea id="damageCommentsInput">${rowData[26]}</textarea></div>`;
 
-        displayText1 += `<div class="button-group"><button onclick="submitNewValue()">Submit</button><button onclick="submitShipped()" disabled=${rowData[27] > 0 && rowData[28] > 0}>Shipped</button></div>`;
+        displayText1 += `<div class="button-group"><button onclick="submitNewValue()">Submit</button><button onclick="submitShipped()">Shipped</button></div>`;
 
         document.getElementById("result1").innerHTML = displayText1;
       }
