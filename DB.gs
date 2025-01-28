@@ -9,6 +9,10 @@ class Database {
     this.sheet.appendRow([id, oldValue, value, date]);
   }
 
+  createCols(val){
+    this.sheet.appendRow(val);
+  }
+
   // Read data
   read() {
     return this.sheet.getDataRange().getValues();

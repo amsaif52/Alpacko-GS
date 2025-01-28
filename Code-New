@@ -22,6 +22,12 @@ function initialSetup() {
     fluteNum: "i",
     printNum: "j",
     expectedQty: "k",
+    sheetCost: "o",
+    overHead: "p",
+    profit: "q",
+    printCost: "s",
+    numSkid: "u",
+    numBoxPerSkid: "v",
     arrivalDate: "aa",
     customer: "ab",
     sheetWidth: "ac",
@@ -31,7 +37,7 @@ function initialSetup() {
     deliveryDate: "ag",
     etcConfirmation: "ah",
     totalInventory: "ai",
-    costPerInventory: "aj",
+    costPerInventory: "aj",//20
     recQty: "ak",
     processSheets: "al",
     printNumber: "am",
@@ -41,13 +47,22 @@ function initialSetup() {
     damageComments: "aq",
     totalNumberBoxes: "ar",
     skidNumber: "as",
-    paperCost: "at",
-    shippingCost: "au",
-    opCost: "av",
-    updatedAtColumn: "aw",
+    boxLocation: "at",
+    paperCost: "au",
+    shippingCost: "av",
+    opCost: "aw",
+    updatedAtColumn: "ax",
   });
 }
 
+/**
+ * Searches the primary sheet for a row that matches the given URL in the "skuId" column.
+ * Returns an array of values from the matching row, including various columns such as vendor information,
+ * product dimensions, customer details, and cost information.
+ *
+ * @param {string} url - The URL to search for in the "skuId" column.
+ * @returns {Array} An array of values from the matching row, or an empty array if no match is found.
+ */
 const searchPrimarySheet = (url) => {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
     Config.mainSheet,
@@ -67,13 +82,15 @@ const searchPrimarySheet = (url) => {
         data[i][columnNumberGetter("fluteNum") - 1],
         data[i][columnNumberGetter("printNum") - 1],
         data[i][columnNumberGetter("expectedQty") - 1],
-        data[i][columnNumberGetter("arrivalDate") - 1],
+        data[i][columnNumberGetter("arrivalDate") - 1] ? new Date(data[i][columnNumberGetter("arrivalDate") - 1]).toLocaleDateString()
+        : "N/A",
         data[i][columnNumberGetter("customer") - 1],
         data[i][columnNumberGetter("sheetWidth") - 1],
         data[i][columnNumberGetter("sheetHeight") - 1],
         data[i][columnNumberGetter("customerPo") - 1],
         data[i][columnNumberGetter("customerPoQty") - 1],
-        data[i][columnNumberGetter("deliveryDate") - 1], // 16
+        data[i][columnNumberGetter("deliveryDate") - 1] ? new Date(data[i][columnNumberGetter("deliveryDate") - 1]).toLocaleDateString()
+        : "N/A", // 16
         data[i][columnNumberGetter("etcConfirmation") - 1],
         data[i][columnNumberGetter("totalInventory") - 1],
         data[i][columnNumberGetter("costPerInventory") - 1],
@@ -86,12 +103,19 @@ const searchPrimarySheet = (url) => {
         data[i][columnNumberGetter("damageComments") - 1],
         data[i][columnNumberGetter("totalNumberBoxes") - 1],
         data[i][columnNumberGetter("skidNumber") - 1],
+        data[i][columnNumberGetter("boxLocation") - 1],
         data[i][columnNumberGetter("paperCost") - 1],
         data[i][columnNumberGetter("shippingCost") - 1],
         data[i][columnNumberGetter("opCost") - 1],
         data[i][columnNumberGetter("updatedAtColumn") - 1]
           ? new Date(data[i][columnNumberGetter("updatedAtColumn") - 1]).toLocaleDateString()
-          : "N/A", // 32
+          : "N/A", // 33
+        data[i][columnNumberGetter("numSkid") - 1],
+        data[i][columnNumberGetter("numBoxPerSkid") - 1],
+        data[i][columnNumberGetter("sheetCost") - 1],
+        data[i][columnNumberGetter("overHead") - 1],
+        data[i][columnNumberGetter("profit") - 1],
+        data[i][columnNumberGetter("printCost") - 1],
       ];
     }
   }
@@ -256,11 +280,24 @@ function areAllPropertiesFilled() {
 
 function addTransaction(rowData, newValue) {
   const id = rowData[2];
-  const [_, oldValue] = searchPrimarySheet(id);
+  const [_, ...oldValue] = searchPrimarySheet(id);
   const db = new Database("Transaction");
   const updatedAt = new Date();
   db.create(id, oldValue || 0, JSON.stringify(newValue), updatedAt);
   updateCellValueById(id, newValue);
+  return [id, newValue, new Date(updatedAt)?.toLocaleDateString()];
+}
+
+function shippedTransaction(rowData, newValue) {
+  const id = rowData[2];
+  const rowValue = searchPrimarySheet(id);
+  const db = new Database("Transaction");
+  const updatedAt = new Date();
+  db.create(id, JSON.stringify(rowValue), JSON.stringify(newValue), updatedAt);
+  const db1 = new Database("Shipped");
+  db1.createCols([rowValue[14],rowValue[15],rowValue[16],rowValue[34],rowValue[35],newValue.damageCommentsInput,newValue.totalNumberBoxesInput,rowValue[30],newValue.totalNumberBoxesInput*newValue.skidInput,updatedAt.toLocaleDateString()]);
+  const db2 = new Database("Cost");
+  db2.createCols([rowValue[14],rowValue[9],rowValue[36]*newValue.recInput,60+(newValue.skidInput - 1)*20,rowValue[37] + rowValue[38] + rowValue[39]* newValue.totalNumberBoxesInput, updatedAt.toLocaleDateString()]);
   return [id, newValue, new Date(updatedAt)?.toLocaleDateString()];
 }
 
@@ -288,13 +325,18 @@ function updateCellValueById(id, newValue) {
   const lastRow = sheet.getLastRow();
   const columnRange = sheet.getRange(1, columnNumberGetter("skuId"), lastRow);
   const columnValues = columnRange.getValues();
+  const data = sheet.getDataRange().getValues();
 
   for (let i = 1; i < columnValues.length; i++) {
     if (columnValues[i][0] === id) {
       const rowToUpdate = i + 1;
+      const findEtcConfirmationData = parseFloat(data[i][columnNumberGetter("etcNum") - 1] || 0,0);
+      const findSheetCost = parseFloat(data[i][columnNumberGetter("sheetCost") - 1] || 0,0);
+      const findPrintingCost = parseFloat(data[i][columnNumberGetter("overHead") - 1] || 0,0) + parseFloat(data[i][columnNumberGetter("profit") - 1] || 0,0) + parseFloat((data[i][columnNumberGetter("printCost") - 1] || 0) * newValue?.totalNumberBoxesInput,0);
       sheet
         .getRange(rowToUpdate, columnNumberGetter("etcConfirmation"))
-        .setValue(newValue?.etcInput);
+        .setValue(newValue?.etcInput)
+        .setBackground(findEtcConfirmationData !== newValue?.etcInput ? "#FF0000" : ""); 
       sheet
         .getRange(rowToUpdate, columnNumberGetter("recQty"))
         .setValue(newValue?.recInput);
@@ -322,6 +364,19 @@ function updateCellValueById(id, newValue) {
       sheet
         .getRange(rowToUpdate, columnNumberGetter("damageComments"))
         .setValue(newValue?.damageCommentsInput);
+      sheet
+        .getRange(rowToUpdate, columnNumberGetter("boxLocation"))
+        .setValue(newValue?.boxLocationInput);
+
+        sheet
+        .getRange(rowToUpdate, columnNumberGetter("paperCost"))
+        .setValue(findSheetCost * newValue?.recInput);
+        sheet
+        .getRange(rowToUpdate, columnNumberGetter("shippingCost"))
+        .setValue(60 + (newValue?.skidInput - 1) * 20);
+        sheet
+        .getRange(rowToUpdate, columnNumberGetter("opCost"))
+        .setValue(findPrintingCost);
       sheet
         .getRange(rowToUpdate, columnNumberGetter("updatedAtColumn"))
         .setValue(new Date());

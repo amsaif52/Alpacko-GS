@@ -45,13 +45,21 @@
           ++countResults;
           lastResult = decodedText;
           if (decodedText) {
-            google.script.run
-              .withSuccessHandler(onQRCodeFound)
-              .withFailureHandler(function (error) {
-                hideSpinner();
-                alert("Error in searchSheetForUrl:", error);
-              })
-              .searchPrimarySheet(decodedText);
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+              google.script.run
+                .withSuccessHandler(function(data) {
+                  onQRCodeFound(data);
+                })
+                .withFailureHandler(function (error) {
+                  hideSpinner();
+                  alert("Error in searchSheetForUrl: " + error.message);
+                })
+                .searchPrimarySheet(decodedText);
+            } else {
+              console.error("google.script.run is not defined.");
+              hideSpinner();
+              alert("Error: google.script.run is not defined.");
+            }
           }
         }
       }
@@ -64,7 +72,8 @@
         document.getElementById("overlay").style.display = "none";
       }
 
-      function showUpdate() {
+      function showUpdate(text) {
+        document.getElementById("updated").innerHTML = text;
         document.getElementById("confirmation").style.display = "flex";
       }
 
@@ -311,6 +320,8 @@
               document.getElementById("processSheetsInput").value ?? 0,
             damageCommentsInput:
               document.getElementById("damageCommentsInput").value ?? 0,
+            boxLocationInput:
+              document.getElementById("boxLocationInput").value ?? 0,
           };
 
           if (calculatedValue === "") {
@@ -321,29 +332,8 @@
           google.script.run
             .withSuccessHandler(function (updatedRowData) {
               hideSpinner();
-              showUpdate();
-              console.log(updatedRowData);
+              showUpdate("UPDATED!!!");
               if (updatedRowData.length) {
-                // document.getElementById("infoID").innerHTML = updatedRowData[0];
-                // document.getElementById("infoName").innerHTML =
-                //     updatedRowData[1];
-                // document.getElementById("infoRecQty").innerHTML =
-                //     updatedRowData[1].recInput;
-                // document.getElementById("infoEtcQty").innerHTML =
-                //     updatedRowData[1].etcInput;
-                // document.getElementById("infoInventory").innerHTML =
-                //     updatedRowData[1].invInput;
-                // document.getElementById("infoPrint").innerHTML =
-                //     updatedRowData[1].printCheck ? "Completed" : "Not Completed";
-                // document.getElementById("infoCut").innerHTML = updatedRowData[1]
-                //     .cutCheck
-                //     ? "Completed"
-                //     : "Not Completed";
-                // document.getElementById("infoGlue").innerHTML =
-                //     updatedRowData[1].glueCheck ? "Completed" : "Not Completed";
-                // document.getElementById("infoUpdatedAt").innerHTML =
-                //     updatedRowData[2];
-
                 setTimeout(function () {
                   hideUpdate();
                   document.getElementById("result").innerHTML = "";
@@ -368,6 +358,65 @@
               hideSpinner();
             })
             .addTransaction(rowData, calculatedValue);
+        };
+
+        window.submitShipped = function () {
+          showSpinner();
+          var calculatedValue = {
+            printCheckInput:
+              document.getElementById("printCheckInput").checked ?? false,
+            cutCheckInput:
+              document.getElementById("cutCheckInput").checked ?? false,
+            glueCheckInput:
+              document.getElementById("glueCheckInput").checked ?? false,
+            recInput: document.getElementById("recInput").value ?? 0,
+            etcInput: document.getElementById("etcInput").value ?? 0,
+            damageInput: document.getElementById("damageInput").value ?? 0,
+            skidInput: document.getElementById("skidInput").value ?? 0,
+            totalNumberBoxesInput:
+              document.getElementById("totalNumberBoxesInput").value ?? 0,
+            processSheetsInput:
+              document.getElementById("processSheetsInput").value ?? 0,
+            damageCommentsInput:
+              document.getElementById("damageCommentsInput").value ?? 0,
+            boxLocationInput:
+              document.getElementById("boxLocationInput").value ?? 0,
+          };
+
+          if (calculatedValue === "") {
+            hideSpinner();
+            return;
+          }
+          console.log("Calculated value:", calculatedValue, rowData);
+          google.script.run
+            .withSuccessHandler(function (updatedRowData) {
+              hideSpinner();
+              showUpdate("Shipped");
+              if (updatedRowData.length) {
+                setTimeout(function () {
+                  hideUpdate();
+                  document.getElementById("result").innerHTML = "";
+                  document.getElementById("result1").innerHTML = "";
+                  lastResult = null;
+                  html5QrcodeScanner
+                    .clear()
+                    .then(() => {
+                      console.log("QR Code scanner reset successfully.");
+                      html5QrcodeScanner.render(onScanSuccess);
+                    })
+                    .catch((error) => {
+                      console.error("Failed to reset QR Code scanner:", error);
+                    });
+                }, 3000);
+              } else {
+                console.error("Updated data format is incorrect");
+              }
+            })
+            .withFailureHandler(function (error) {
+              alert("Error in searchSheetForUrl:", error);
+              hideSpinner();
+            })
+            .shippedTransaction(rowData, calculatedValue);
         };
 
         var value = rowData[1];
@@ -416,7 +465,7 @@
           '<tr><td class="info-label">Delivery Date:</td><td>' +
           rowData[16] +
           '</td><td class="info-label">Updated At:</td><td>' +
-          rowData[32] +
+          rowData[33] +
           "</td></tr>";
         ("</table>");
 
@@ -440,9 +489,10 @@
         displayText1 += `<div>Damage: <br><input type="number" value=${rowData[25]} inputmode="numeric" step="1" id="damageInput" min="0"></div>`;
         displayText1 += `<div>Total Number of Boxes: <br><input type="number" value=${rowData[27]} inputmode="numeric" step="1" id="totalNumberBoxesInput" min="0"></div>`;
         displayText1 += `<div>Skid#: <br><input type="number" value=${rowData[28]} inputmode="numeric" step="1" id="skidInput" min="0"></div>`;
+        displayText1 += `<div>Box Location: <br><input type="text" value=${rowData[29]} inputmode="numeric" step="1" id="boxLocationInput"></div>`;
         displayText1 += `<div>Damage Comments: <br><textarea id="damageCommentsInput">${rowData[26]}</textarea></div>`;
 
-        displayText1 += '<button onclick="submitNewValue()">Submit</button>';
+        displayText1 += '<div class="button-group"><button onclick="submitNewValue()">Submit</button><button onclick="submitShipped()">Shipped</button></div>';
 
         document.getElementById("result1").innerHTML = displayText1;
       }
