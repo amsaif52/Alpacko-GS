@@ -15,10 +15,13 @@
         Scan
       </button>
       <button id="btnTab2" class="tab-button" onclick="showTab('tab2')">
-        Inventory
+        Sale PO Order
       </button>
       <button id="btnTab3" class="tab-button" onclick="showTab('tab3')">
-        Orders
+        Inventory
+      </button>
+      <button id="btnTab4" class="tab-button" onclick="showTab('tab4')">
+        Vendor Order
       </button>
     </div>
     <div id="tab1" class="tab-content">
@@ -28,11 +31,14 @@
       <div id="result1" style="margin-top: 20px"></div>
     </div>
     <div id="tab2" class="tab-content" style="display: none">
-      <div id="inventory-results"></div>
-    </div>
-    <div id="tab3" class="tab-content" style="display: none">
       <div id="order-results"></div>
       <div id="order-print"></div>
+    </div>
+    <div id="tab3" class="tab-content" style="display: none">
+      <div id="inventory-results"></div>
+    </div>
+    <div id="tab4" class="tab-content" style="display: none">
+      <div id="sale-po-results"></div>
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
@@ -45,9 +51,13 @@
           ++countResults;
           lastResult = decodedText;
           if (decodedText) {
-            if (typeof google !== 'undefined' && google.script && google.script.run) {
+            if (
+              typeof google !== "undefined" &&
+              google.script &&
               google.script.run
-                .withSuccessHandler(function(data) {
+            ) {
+              google.script.run
+                .withSuccessHandler(function (data) {
                   onQRCodeFound(data);
                 })
                 .withFailureHandler(function (error) {
@@ -183,8 +193,13 @@
 
       function populateInventoryResults(data) {
         const { finalData } = data;
-
-        const orderResultsContainer = document.getElementById("inventory-results");
+        const orderResultsContainer =
+          document.getElementById("inventory-results");
+        if (finalData.length === 0) {
+          orderResultsContainer.innerHTML = "No Excess Inventory found.";
+          hideSpinner();
+          return;
+        }
         orderResultsContainer.innerHTML = "";
         finalData.forEach((order) => {
           const orderElement = document.createElement("div");
@@ -192,27 +207,148 @@
           const printElement = document.createElement("div");
 
           const fields = [
-            { label: "Vendor PO #", value: order["Vendor PO#"] },
-            { label: "Vendor Name", value: order["Vendor Name"] },
-            { label: "ETC/Wall", value: order["ETC/Wall"] },
-            { label: "Length", value: order["Length"] },
-            { label: "Breadth", value: order["Breadth"] },
-            { label: "Width", value: order["Width"] },
-            { label: "Flute", value: order["Flute"] },
-            { label: "Sheet Cost", value: order["Sheet Cost"] },
-            { label: "Customer", value: order["Customer"] },
-            { label: "Total Inventory", value: order["Total Inventory"] },
-            { label: "Cost Per Inventory", value: (order["Sheet Cost"] ?? 0) * (order["Total Inventory"] ?? 0) },
-            { label: "Last Updated", value: order["Last Updated"] },
+            { label: "SUK#", value: order["SUK#"], img: false },
+            { label: "ECT/Wall", value: order["ECT/Wall"], img: false },
+            { label: "L (in)", value: order["L(in)"], img: false },
+            { label: "B (in)", value: order["B(in)"], img: false },
+            { label: "W (in)", value: order["W(in)"], img: false },
+            { label: "Flute", value: order["Flute"], img: false },
+            { label: "Sheet W", value: order["SheetW"], img: false },
+            { label: "Sheet L", value: order["SheetL"], img: false },
+            {
+              label: "Total Inventory",
+              value: order["TotalInventory"],
+              img: false,
+            },
+            { label: "QR Code", value: order["QRcode"], img: true },
+            { label: "Last Updated", value: order["LastUpdated"], img: false },
           ];
 
           fields.forEach((field) => {
             const p = document.createElement("p");
-            p.innerHTML = `<strong>${field.label}:</strong> ${field.value}`;
+            if (field.img) {
+              p.innerHTML = `<strong>${field.label}:</strong> <img src="${field.value}" alt="${field.label}" style="width: 100px;">`;
+            } else {
+              p.innerHTML = `<strong>${field.label}:</strong> ${field.value}`;
+            }
             orderElement.appendChild(p);
           });
 
           orderResultsContainer.appendChild(orderElement);
+        });
+        hideSpinner();
+      }
+
+      function populateSalesPOResults(data) {
+        const { finalData } = data;
+        const salePoContainer = document.getElementById("sale-po-results");
+        if (finalData.length === 0) {
+          salePoContainer.innerHTML = "No Sale PO orders found.";
+          hideSpinner();
+          return;
+        }
+        salePoContainer.innerHTML = "";
+        finalData.forEach((order) => {
+          const salePoElement = document.createElement("div");
+          salePoElement.className = "sale-po-item";
+
+          const fields = [
+            { label: "SUK#", value: order["SUK#"], img: false },
+            { label: "ECT/Wall", value: order["ECT/Wall"], img: false },
+            { label: "L (in)", value: order["L(in)"], img: false },
+            { label: "B (in)", value: order["B(in)"], img: false },
+            { label: "W (in)", value: order["W(in)"], img: false },
+            { label: "Flute", value: order["Flute"], img: false },
+            { label: "Sheet W", value: order["SheetW"], img: false },
+            { label: "Sheet L", value: order["SheetL"], img: false },
+            { label: "Vendor PO#", value: order["VendorPO#"], img: false },
+            { label: "Vendor Name", value: order["VendorName"], img: false },
+            {
+              label: "Vendor sheet Arrival Date",
+              value: order["VendorsheetArrivalDate"],
+              img: false,
+            },
+            { label: "QR Code", value: order["QRcode"], img: true },
+            { label: "Last Updated", value: order["LastUpdated"], img: false },
+          ];
+
+          fields.forEach((field) => {
+            const p = document.createElement("p");
+            if (field.img) {
+              p.innerHTML = `<strong>${field.label}:</strong> <img src="${field.value}" alt="${field.label}" style="width: 100px;">`;
+            } else {
+              p.innerHTML = `<strong>${field.label}:</strong> ${field.value}`;
+            }
+            salePoElement.appendChild(p);
+          });
+
+          salePoContainer.appendChild(salePoElement);
+        });
+        hideSpinner();
+      }
+
+      function populateOrderResults(data) {
+        const { finalData } = data;
+        const salePoContainer = document.getElementById("order-results");
+        if (finalData.length === 0) {
+          salePoContainer.innerHTML = "No Sale PO orders found.";
+          hideSpinner();
+          return;
+        }
+        salePoContainer.innerHTML = "";
+        finalData.forEach((order) => {
+          const salePoElement = document.createElement("div");
+          salePoElement.className = "order-item";
+
+          const fields = [
+            { label: "SUK#", value: order["SUK#"], img: false },
+            { label: "ECT/Wall", value: order["ECT/Wall"], img: false },
+            { label: "L (in)", value: order["L(in)"], img: false },
+            { label: "B (in)", value: order["B(in)"], img: false },
+            { label: "W (in)", value: order["W(in)"], img: false },
+            { label: "Flute", value: order["Flute"], img: false },
+            { label: "Print N/Y", value: order["PrintN/Y"] },
+            { label: "Expected Qty", value: order["ExpectedQty"] },
+            { label: "Sheet W", value: order["SheetW"], img: false },
+            { label: "Sheet L", value: order["SheetL"], img: false },
+            { label: "Vendor PO#", value: order["VendorPO#"], img: false },
+            { label: "Vendor Name", value: order["VendorName"], img: false },
+            {
+              label: "Vendor sheet Arrival Date",
+              value: order["VendorsheetArrivalDate"],
+              img: false,
+            },
+            { label: "Customer", value: order["Customer"], img: false },
+            { label: "Customer PO", value: order["CustomerPO"], img: false },
+            {
+              label: "Customer PO Qty",
+              value: order["CustomerPOQty"],
+              img: false,
+            },
+            {
+              label: "Delivery Date",
+              value: order["DeliveryDate"],
+              img: false,
+            },
+            {
+              label: "Total Inventory",
+              value: order["TotalInventory"],
+              img: false,
+            },
+            { label: "Last Updated", value: order["LastUpdated"], img: false },
+          ];
+
+          fields.forEach((field) => {
+            const p = document.createElement("p");
+            if (field.img) {
+              p.innerHTML = `<strong>${field.label}:</strong> <img src="${field.value}" alt="${field.label}" style="width: 100px;">`;
+            } else {
+              p.innerHTML = `<strong>${field.label}:</strong> ${field.value}`;
+            }
+            salePoElement.appendChild(p);
+          });
+
+          salePoContainer.appendChild(salePoElement);
         });
         hideSpinner();
       }
@@ -223,14 +359,31 @@
           btnTab3.addEventListener("click", function () {
             showSpinner();
             google.script.run
-              .withSuccessHandler(populateResults)
+              .withSuccessHandler(populateInventoryResults)
               .withFailureHandler(function () {
                 showSpinner();
               })
-              .getOrders();
+              .getFilteredOrders("inventory");
           });
         } else {
           console.log("Element with ID btnTab3 not found.");
+        }
+      });
+
+      document.addEventListener("DOMContentLoaded", function () {
+        var btnTab3 = document.getElementById("btnTab4");
+        if (btnTab3) {
+          btnTab3.addEventListener("click", function () {
+            showSpinner();
+            google.script.run
+              .withSuccessHandler(populateSalesPOResults)
+              .withFailureHandler(function () {
+                showSpinner();
+              })
+              .getFilteredOrders("orders");
+          });
+        } else {
+          console.log("Element with ID btnTab4 not found.");
         }
       });
 
@@ -240,11 +393,11 @@
           btnTab2.addEventListener("click", function () {
             showSpinner();
             google.script.run
-              .withSuccessHandler(populateInventoryResults)
+              .withSuccessHandler(populateOrderResults)
               .withFailureHandler(function () {
                 showSpinner();
               })
-              .getInventoryOrders();
+              .getFilteredOrders("salePO");
           });
         } else {
           console.log("Element with ID btnTab2 not found.");
@@ -323,7 +476,6 @@
               document.getElementById("boxLocationInput").value ?? 0,
           };
 
-          
           google.script.run
             .withSuccessHandler(function (updatedRowData) {
               hideSpinner();
@@ -355,9 +507,51 @@
             .addTransaction(rowData, calculatedValue);
         };
 
-        window.updateInventory = function() {
+        window.updateDeliver = function () {
           showSpinner();
-          var calculatedValue = document.getElementById("updateInventoryInput").value ?? 0;
+          if (
+            document.getElementById("recInput").value > 0 &&
+            document.getElementById("etcInput").value.length > 0
+          ) {
+            alert("Please enter both EC# Confirmation and Rec Qty");
+            hideSpinner();
+            return;
+          }
+          if (
+            document.getElementById("recInput").value.toString() ===
+              rowData[24].toString() &&
+            document.getElementById("etcInput").value.toString() ===
+              rowData[22].toString()
+          ) {
+            alert("Rec Qty or ECT# Confirmatiion are already updated");
+            hideSpinner();
+            return;
+          }
+          var calculatedValue = {
+            recQty: document.getElementById("recInput").value ?? 0,
+            etcConfirmation: document.getElementById("etcInput").value ?? 0,
+          };
+          google.script.run
+            .withSuccessHandler(function (updatedRowData) {
+              hideSpinner();
+              showUpdate("Delivered!!!");
+              setTimeout(function () {
+                document.getElementById("recInput").disabled = true;
+                document.getElementById("etcInput").disabled = true;
+                hideUpdate();
+              }, 5000);
+            })
+            .withFailureHandler(function (error) {
+              alert("Error in searchSheetForUrl:", error);
+              hideSpinner();
+            })
+            .updateShippedStatus(rowData, calculatedValue);
+        };
+
+        window.updateInventory = function () {
+          showSpinner();
+          var calculatedValue =
+            document.getElementById("updateInventoryInput").value ?? 0;
           if (!calculatedValue) {
             alert("Please enter a value to update inventory");
             hideSpinner();
@@ -372,10 +566,11 @@
             .withSuccessHandler(function (updatedRowData) {
               hideSpinner();
               showUpdate("INVENTORY UPDATED!!!");
-              console.log(updatedRowData,'***');
+              console.log(updatedRowData, "***");
               if (updatedRowData.length) {
                 setTimeout(function () {
-                  document.getElementById("currInv").innerText = updatedRowData[1];
+                  document.getElementById("currInv").innerText =
+                    updatedRowData[1];
                   document.getElementById("recInput").value = updatedRowData[0];
                   document.getElementById("updateInventoryInput").value = 0;
                   hideUpdate();
@@ -388,8 +583,13 @@
               alert("Error in searchSheetForUrl:", error);
               hideSpinner();
             })
-            .updateInv(rowData,"totalInventory","recQty", parseFloat(calculatedValue));
-        }
+            .updateInv(
+              rowData,
+              "totalInventory",
+              "recQty",
+              parseFloat(calculatedValue)
+            );
+        };
 
         window.submitShipped = function () {
           showSpinner();
@@ -413,13 +613,19 @@
             boxLocationInput:
               document.getElementById("boxLocationInput").value ?? 0,
           };
-          if (calculatedValue.totalNumberBoxesInput && parseFloat(calculatedValue.totalNumberBoxesInput) <= 0 && calculatedValue.skidInput && parseFloat(calculatedValue.skidInput) <= 0) {
-            alert("Shipped button is blocked until total number of boxes and skid number are filled!");
+          if (
+            calculatedValue.totalNumberBoxesInput &&
+            parseFloat(calculatedValue.totalNumberBoxesInput) <= 0 &&
+            calculatedValue.skidInput &&
+            parseFloat(calculatedValue.skidInput) <= 0
+          ) {
+            alert(
+              "Shipped button is blocked until total number of boxes and skid number are filled!"
+            );
             hideSpinner();
             return;
           }
 
-          
           google.script.run
             .withSuccessHandler(function (updatedRowData) {
               hideSpinner();
@@ -453,78 +659,86 @@
 
         var value = rowData[1];
         var displayText =
-          '<table class="info-table">' +
-          '<tr><td class="info-label">Vendor PO #:</td><td>' +
-          rowData[0] +
-          '</td><td class="info-label">Vendor Name:</td><td>' +
-          rowData[1] +
-          "</td></tr>" +
-          '<tr><td class="info-label">Sku Id:</td><td>' +
-          rowData[2] +
-          '</td><td class="info-label">Etc Num:</td><td>' +
-          rowData[3] +
-          "</td></tr>" +
-          '<tr><td class="info-label">Length:</td><td>' +
-          rowData[4] +
-          '</td><td class="info-label">Breadth:</td><td>' +
-          rowData[5] +
-          "</td></tr>" +
-          '<tr><td class="info-label">Width:</td><td>' +
-          rowData[6] +
-          '</td><td class="info-label">Flute:</td><td>' +
-          rowData[7] +
-          "</td></tr>" +
-          '<tr><td class="info-label">Print:</td><td>' +
-          rowData[8] +
-          '</td><td class="info-label">Expected Qty:</td><td>' +
-          rowData[9] +
-          "</td></tr>" +
-          '<tr><td class="info-label">Arrival Date:</td><td>' +
-          rowData[10] +
-          '</td><td class="info-label">Customer:</td><td>' +
-          rowData[11] +
-          "</td></tr>" +
-          '<tr><td class="info-label">Sheet Width:</td><td>' +
-          rowData[12] +
-          '</td><td class="info-label">Sheet Height:</td><td>' +
-          rowData[13] +
-          "</td></tr>" +
-          '<tr><td class="info-label">Customer PO:</td><td>' +
-          rowData[14] +
-          '</td><td class="info-label">Customer PO Qty:</td><td>' +
+          '<div class="info-table">' +
+          '<div class="info-row"><div class="info-label">Vendor PO #:</div><div>' +
           rowData[15] +
-          "</td></tr>" +
-          '<tr><td class="info-label">Delivery Date:</td><td>' +
+          '</div><div class="info-label">Vendor Name:</div><div>' +
           rowData[16] +
-          '</td><td class="info-label">Updated At:</td><td>' +
-          rowData[33] +
-          "</td></tr>";
-        ("</table>");
+          "</div></div>" +
+          '<div class="info-row"><div class="info-label">Sku Id:</div><div>' +
+          rowData[0] +
+          '</div><div class="info-label">Etc Num:</div><div>' +
+          rowData[1] +
+          "</div></div>" +
+          '<div class="info-row"><div class="info-label">Length:</div><div>' +
+          rowData[2] +
+          '</div><div class="info-label">Breadth:</div><div>' +
+          rowData[3] +
+          "</div></div>" +
+          '<div class="info-row"><div class="info-label">Width:</div><div>' +
+          rowData[4] +
+          '</div><div class="info-label">Flute:</div><div>' +
+          rowData[5] +
+          "</div></div>" +
+          '<div class="info-row"><div class="info-label">Print:</div><div>' +
+          rowData[6] +
+          '</div><div class="info-label">Expected Qty:</div><div>' +
+          rowData[7] +
+          "</div></div>" +
+          '<div class="info-row"><div class="info-label">Arrival Date:</div><div>' +
+          rowData[17] +
+          '</div><div class="info-label">Customer:</div><div>' +
+          rowData[18] +
+          "</div></div>" +
+          '<div class="info-row"><div class="info-label">Sheet Width:</div><div>' +
+          rowData[9] +
+          '</div><div class="info-label">Sheet Length:</div><div>' +
+          rowData[10] +
+          "</div></div>" +
+          '<div class="info-row"><div class="info-label">Customer PO:</div><div>' +
+          rowData[19] +
+          '</div><div class="info-label">Customer PO Qty:</div><div>' +
+          rowData[20] +
+          "</div></div>" +
+          '<div class="info-row"><div class="info-label">Delivery Date:</div><div>' +
+          rowData[21] +
+          '</div><div class="info-label">Updated At:</div><div>' +
+          rowData[38] +
+          "</div></div>" +
+          "</div>";
 
         document.getElementById("result").innerHTML = displayText;
-
-        var displayText1 = `<div>ETC# Confirmation: <br><input type="number" value=${rowData[17]} inputmode="numeric" step="1" id="etcInput" min="0"></div>`;
-        displayText1 += `<div>Rec Qty: <br><input type="number" value=${rowData[20]} inputmode="numeric" step="1" id="recInput" min="0"></div>`;
-        displayText1 += `<div>Process Sheets: <br><input type="number" value=${rowData[21]} inputmode="numeric" step="1" id="processSheetsInput" min="0"></div>`;
+        var displayText1 = `<div class="divider"></div>`;
+        displayText1 += `<div>ECT# Confirmation: <br><input type="text" value="${
+          rowData[22]
+        }" ${rowData[39] ? "disabled" : ""} id="etcInput" ></div>`;
+        displayText1 += `<div>Rec Qty: <br><input type="number" value="${
+          rowData[24]
+        }" ${
+          rowData[39] ? "disabled" : ""
+        } inputmode="numeric" step="1" id="recInput" min="0"></div>`;
+        displayText1 += `<button onclick="updateDeliver()">Delivered</button>`;
+        displayText1 += `<div class="divider"></div>`;
+        displayText1 += `<div>Process Sheets: <br><input type="number" value=${rowData[25]} inputmode="numeric" step="1" id="processSheetsInput" min="0"></div>`;
         displayText1 +=
           '<div class="checkboxStatus"><div>Print: <input type="checkbox" class="checkbox" id="printCheckInput" ' +
-          (rowData[22] ? "checked" : "") +
+          (rowData[26] ? "checked" : "") +
           "></div>";
         displayText1 +=
           '<div>Cut: <input type="checkbox" class="checkbox" id="cutCheckInput" ' +
-          (rowData[23] ? "checked" : "") +
+          (rowData[27] ? "checked" : "") +
           "></div>";
         displayText1 +=
           '<div>Glue: <input type="checkbox" class="checkbox" id="glueCheckInput" ' +
-          (rowData[24] ? "checked" : "") +
+          (rowData[28] ? "checked" : "") +
           "></div></div>";
-          displayText1 +=`<div>Current Inventory: <br><span id="currInv">${rowData[18]}</span></div>`;
+        displayText1 += `<div>Current Inventory: <br><span id="currInv">${rowData[23]}</span></div>`;
         displayText1 += `<div>Change Inventory: <br><div><input type="number" inputmode="numeric" step="1" id="updateInventoryInput" min="0"><button onclick="updateInventory()">Update Inventory</button></div></div>`;
-        displayText1 += `<div>Damage: <br><input type="number" value=${rowData[25]} inputmode="numeric" step="1" id="damageInput" min="0"></div>`;
-        displayText1 += `<div>Total Number of Boxes: <br><input type="number" value=${rowData[27]} inputmode="numeric" step="1" id="totalNumberBoxesInput" min="0"></div>`;
-        displayText1 += `<div>Skid#: <br><input type="number" value=${rowData[28]} inputmode="numeric" step="1" id="skidInput" min="0"></div>`;
-        displayText1 += `<div>Box Location: <br><input type="text" value=${rowData[29]} inputmode="numeric" step="1" id="boxLocationInput"></div>`;
-        displayText1 += `<div>Damage Comments: <br><textarea id="damageCommentsInput">${rowData[26]}</textarea></div>`;
+        displayText1 += `<div>Damage: <br><input type="number" value=${rowData[29]} inputmode="numeric" step="1" id="damageInput" min="0"></div>`;
+        displayText1 += `<div>Total Number of Boxes: <br><input type="number" value=${rowData[31]} inputmode="numeric" step="1" id="totalNumberBoxesInput" min="0"></div>`;
+        displayText1 += `<div>Skid#: <br><input type="number" value=${rowData[32]} inputmode="numeric" step="1" id="skidInput" min="0"></div>`;
+        displayText1 += `<div>Box Location: <br><input type="text" value=${rowData[33]} inputmode="numeric" step="1" id="boxLocationInput"></div>`;
+        displayText1 += `<div>Damage Comments: <br><textarea id="damageCommentsInput">${rowData[30]}</textarea></div>`;
 
         displayText1 += `<div class="button-group"><button onclick="submitNewValue()">Submit</button><button onclick="submitShipped()">Shipped</button></div>`;
 

@@ -11,47 +11,54 @@ function doGet() {
 function initialSetup() {
   const scriptProperties = PropertiesService.getScriptProperties();
   scriptProperties.setProperties({
-    vendorPoColumn: "a",
-    vendorName: "b",
-    qrCodeUrlColumn: "c",
-    skuId: "d",
-    etcNum: "e",
-    lengthNum: "f",
-    breadthNum: "g",
-    widthNum: "h",
-    fluteNum: "i",
-    printNum: "j",
-    expectedQty: "k",
-    sheetCost: "o",
-    overHead: "p",
-    profit: "q",
-    printCost: "s",
-    numSkid: "u",
-    numBoxPerSkid: "v",
-    arrivalDate: "aa",
-    customer: "ab",
-    sheetWidth: "ac",
-    sheetHeight: "ad",
-    customerPo: "ae",
-    customerPoQty: "af",
-    deliveryDate: "ag",
-    etcConfirmation: "ah",
-    totalInventory: "ai",
-    costPerInventory: "aj",//20
-    recQty: "ak",
-    processSheets: "al",
-    printNumber: "am",
-    cutNumber: "an",
-    glueNumber: "ao",
-    damageNumber: "ap",
-    damageComments: "aq",
-    totalNumberBoxes: "ar",
-    skidNumber: "as",
-    boxLocation: "at",
-    paperCost: "au",
-    shippingCost: "av",
-    opCost: "aw",
-    updatedAtColumn: "ax",
+    skuId: "a",
+    etcNum: "b",
+    lengthNum: "c",
+    breadthNum: "d",
+    widthNum: "e",
+    fluteNum: "f",
+    printNum: "g",
+    expectedQty: "h",
+    unitPrice: "i",
+    sheetWidth: "j",
+    sheetLength: "k",
+    sheetPerSquare: "l",
+    sheetRate: "m",
+    sheetCost: "n",
+    overHead: "o",
+    profit: "p",
+    profitPerPercentages: "q",
+    printCost: "r",
+    shippingCost: "s",
+    numSkid: "t",
+    boxPerSkid: "u",
+    totalCostOHPF: "v",
+    vendorPO: "w",
+    vendorName: "x",
+    vendorsheetArrivalDate: "y",
+    customer: "aa",
+    customerPO: "ab",
+    customerPOQty: "ac",
+    deliveryDate: "ad",
+    etcConfirmation: "ae",
+    totalInventory: "af",
+    costPerInventory: "ag",
+    recQty: "ah",
+    processSheets: "ai",
+    printNumber: "aj",
+    cutNumber: "ak",
+    glueNumber: "al",
+    damageNumber: "am",
+    damageComments: "an",
+    totalNumberBoxes: "ao",
+    skidNumber: "ap",
+    sheetLocation: "aq",
+    paperCost: "ar",
+    shippingCost: "as",
+    opCost: "at",
+    qrCodeUrlColumn: "au",
+    updatedAtColumn: "av",
+    deliverStatus: "aw",
   });
 }
 
@@ -72,8 +79,6 @@ const searchPrimarySheet = (url) => {
   for (let i = 1; i < data.length; i++) {
     if (data[i][columnIndex] === url) {
       return [
-        data[i][columnNumberGetter("vendorPoColumn") - 1],
-        data[i][columnNumberGetter("vendorName") - 1],
         data[i][columnNumberGetter("skuId") - 1],
         data[i][columnNumberGetter("etcNum") - 1],
         data[i][columnNumberGetter("lengthNum") - 1],
@@ -81,41 +86,41 @@ const searchPrimarySheet = (url) => {
         data[i][columnNumberGetter("widthNum") - 1],
         data[i][columnNumberGetter("fluteNum") - 1],
         data[i][columnNumberGetter("printNum") - 1],
-        data[i][columnNumberGetter("expectedQty") - 1],
-        data[i][columnNumberGetter("arrivalDate") - 1] ? new Date(data[i][columnNumberGetter("arrivalDate") - 1]).toLocaleDateString()
+        data[i][columnNumberGetter("expectedQty") - 1], // 7
+        data[i][columnNumberGetter("unitPrice") - 1],
+        data[i][columnNumberGetter("sheetWidth") - 1],
+        data[i][columnNumberGetter("sheetLength") - 1],
+        data[i][columnNumberGetter("sheetCost") - 1],
+        data[i][columnNumberGetter("numSkid") - 1],
+        data[i][columnNumberGetter("boxPerSkid") - 1],
+        data[i][columnNumberGetter("totalCostOHPF") - 1],
+        data[i][columnNumberGetter("vendorPO") - 1], //15
+        data[i][columnNumberGetter("vendorName") - 1],
+        data[i][columnNumberGetter("vendorsheetArrivalDate") - 1] ? new Date(data[i][columnNumberGetter("vendorsheetArrivalDate") - 1]).toLocaleDateString()
         : "N/A",
         data[i][columnNumberGetter("customer") - 1],
-        data[i][columnNumberGetter("sheetWidth") - 1],
-        data[i][columnNumberGetter("sheetHeight") - 1],
-        data[i][columnNumberGetter("customerPo") - 1],
-        data[i][columnNumberGetter("customerPoQty") - 1],
+        data[i][columnNumberGetter("customerPO") - 1],
+        data[i][columnNumberGetter("customerPOQty") - 1],
         data[i][columnNumberGetter("deliveryDate") - 1] ? new Date(data[i][columnNumberGetter("deliveryDate") - 1]).toLocaleDateString()
-        : "N/A", // 16
-        data[i][columnNumberGetter("etcConfirmation") - 1],
-        data[i][columnNumberGetter("totalInventory") - 1],
-        data[i][columnNumberGetter("costPerInventory") - 1],
-        data[i][columnNumberGetter("recQty") - 1],
+        : "N/A", // 21
+        data[i][columnNumberGetter("etcConfirmation") - 1], //22
+        data[i][columnNumberGetter("totalInventory") - 1], // 23
+        data[i][columnNumberGetter("recQty") - 1], // 24
         data[i][columnNumberGetter("processSheets") - 1],
         data[i][columnNumberGetter("printNumber") - 1],
         data[i][columnNumberGetter("cutNumber") - 1],
         data[i][columnNumberGetter("glueNumber") - 1],
         data[i][columnNumberGetter("damageNumber") - 1],
-        data[i][columnNumberGetter("damageComments") - 1],
+        data[i][columnNumberGetter("damageComments") - 1], //30
         data[i][columnNumberGetter("totalNumberBoxes") - 1],
         data[i][columnNumberGetter("skidNumber") - 1],
-        data[i][columnNumberGetter("boxLocation") - 1],
+        data[i][columnNumberGetter("sheetLocation") - 1],
         data[i][columnNumberGetter("paperCost") - 1],
         data[i][columnNumberGetter("shippingCost") - 1],
         data[i][columnNumberGetter("opCost") - 1],
-        data[i][columnNumberGetter("updatedAtColumn") - 1]
-          ? new Date(data[i][columnNumberGetter("updatedAtColumn") - 1]).toLocaleDateString()
-          : "N/A", // 33
-        data[i][columnNumberGetter("numSkid") - 1],
-        data[i][columnNumberGetter("numBoxPerSkid") - 1],
-        data[i][columnNumberGetter("sheetCost") - 1],
-        data[i][columnNumberGetter("overHead") - 1],
-        data[i][columnNumberGetter("profit") - 1],
-        data[i][columnNumberGetter("printCost") - 1],
+        data[i][columnNumberGetter("qrCodeUrlColumn") - 1], // 37
+        data[i][columnNumberGetter("updatedAtColumn") - 1],
+        data[i][columnNumberGetter("deliverStatus") - 1],
       ];
     }
   }
@@ -157,7 +162,7 @@ function checkDuplicates() {
   const uniqueValues = new Map();
 
   column.forEach((cell, i) => {
-    const value = cell[0];
+    const value = cell[0].replace(/\s/g, "");
     const rowIndex = i + 2;
     if (value === "") return;
 
@@ -470,38 +475,6 @@ function getOrders() {
   return { finalData };
 }
 
-function getInventoryOrders() {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
-    Config.mainSheet
-  );
-
-  const [headers, ...rows] = sheet.getDataRange().getValues();
-  let sortedHeaders = headers;
-
-  // Convert data to a format suitable for serialization, respecting sortedHeaders
-  const finalData = rows
-    .map((row) => {
-      return sortedHeaders.reduce((obj, header, index) => {
-        let value = row[headers.indexOf(header)];
-         // Use the original headers array to match column data
-        // Check for Date objects and convert them to a string
-        if (value instanceof Date) {
-          value = Utilities.formatDate(
-            value,
-            Session.getScriptTimeZone(),
-            "MM-dd-YYYY"
-          );
-        }
-        // Ensure other types are handled correctly (e.g., numbers, strings, booleans)
-        obj[header] = value;
-        return obj;
-      }, {});
-    }).filter(val => {
-      return val["Total Inventory"] > 0;
-    });
-  return { finalData };
-}
-
 function updateInv (rowData,key,key1,newValue) {
   const id = rowData[2];
   const [_, ...oldValue] = searchPrimarySheet(id);
@@ -515,4 +488,57 @@ function updateInv (rowData,key,key1,newValue) {
   }
   updateCellValueByKey(id,{[key]:newValue});
   return [getDeductedInventory, newValue];
+}
+
+function getFilteredOrders(filterType) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
+    Config.mainSheet
+  );
+
+  const [headers, ...rows] = sheet.getDataRange().getValues();
+  let sortedHeaders = headers.map(head => head.replace(/\s/g, '').trim());
+
+  // Convert data to a format suitable for serialization, respecting sortedHeaders
+  const finalData = rows
+    .map((row) => {
+      return sortedHeaders.reduce((obj, header, index) => {
+        let value = row[headers.findIndex(head => head.replace(/\s/g, '').trim() === header)];
+        // Use the original headers array to match column data
+        // Check for Date objects and convert them to a string
+        if (value instanceof Date) {
+          value = Utilities.formatDate(
+            value,
+            Session.getScriptTimeZone(),
+            "MM-dd-YYYY"
+          );
+        }
+        // Ensure other types are handled correctly (e.g., numbers, strings, booleans)
+        obj[header] = value;
+        return obj;
+      }, {});
+    }).filter(val => {
+      if (filterType === "orders") {
+        return val["DeliverStatus"].toString().toLowerCase() !== "true";
+      } else if (filterType === "inventory") {
+        return val["TotalInventory"] > 0;
+      } else if (filterType === "salePO") {
+        const deliveryDate = new Date(val["DeliveryDate"]);
+        const today = new Date();
+        deliveryDate.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+        return deliveryDate >= today;
+      }
+      return true;
+    });
+  return { finalData };
+}
+
+function updateShippedStatus(rowData, newValue) {
+  const id = rowData[0];
+  const [_, ...oldValue] = searchPrimarySheet(id);
+  const db = new Database("Transaction");
+  const updatedAt = new Date();
+  db.create(id, JSON.stringify(oldValue || 0), JSON.stringify(newValue), updatedAt);
+  updateCellValueByKey(id,{deliverStatus:true, ...newValue});
+  return [id, "Shipped", new Date(updatedAt)?.toLocaleDateString()];
 }
