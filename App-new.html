@@ -39,7 +39,6 @@
     </div>
     <div id="tab4" class="tab-content" style="display: none">
       <div id="sale-po-results"></div>
-      <div id="sale-po-print"></div>
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
@@ -165,7 +164,7 @@
 
           orderElement.appendChild(printElement);
 
-          orderResultsContainer.appendChild(orderElement);
+          orderResultsContainer.innerHTML += orderElement;
         });
         hideSpinner();
       }
@@ -181,40 +180,45 @@
         }
         orderResultsContainer.innerHTML = "";
         finalData.forEach((order) => {
-          const orderElement = document.createElement("div");
-          orderElement.className = "inventory-item";
-          const printElement = document.createElement("div");
+          let orderElement = "<div class='inventory-item'>";
 
           const fields = [
-            { label: "SUK#", value: order["SUK#"], img: false },
-            { label: "ECT/Wall", value: order["ECT/Wall"], img: false },
-            { label: "L (in)", value: order["L(in)"], img: false },
-            { label: "B (in)", value: order["B(in)"], img: false },
-            { label: "W (in)", value: order["W(in)"], img: false },
-            { label: "Flute", value: order["Flute"], img: false },
-            { label: "Sheet W", value: order["SheetW"], img: false },
-            { label: "Sheet L", value: order["SheetL"], img: false },
-            { label: "Customer", value: order["Customer"], img: false },
+            { label: "SUK#", value: order["SUK#"], img: false, division: false, idivision:true },
+            { label: "ECT/Wall", value: order["ECT/Wall"], img: false , division: true, idivision: false},
+            { label: "L (in)", value: order["L(in)"], img: false , division: false, idivision:true},
+            { label: "B (in)", value: order["B(in)"], img: false , division: false, idivision: false},
+            { label: "W (in)", value: order["W(in)"], img: false , division: true, idivision: false},
+            { label: "Flute", value: order["Flute"], img: false , division: false, idivision:true},
+            { label: "Sheet W", value: order["SheetW"], img: false , division: false, idivision: false},
+            { label: "Sheet L", value: order["SheetL"], img: false , division: false, idivision: false},
+            { label: "Customer", value: order["Customer"], img: false , division: true, idivision: false },
             {
               label: "Total Inventory",
               value: order["TotalInventory"],
-              img: false,
+              img: false, division: false, idivision:true
             },
-            { label: "QR Code", value: order["QRcode"], img: true },
-            { label: "Last Updated", value: order["LastUpdated"], img: false },
+            { label: "QR Code", value: order["QRcode"], img: true , division: false, idivision: false},
+            { label: "Last Updated", value: order["LastUpdated"], img: false , division: true, idivision: false},
           ];
 
           fields.forEach((field) => {
             const p = document.createElement("p");
-            if (field.img) {
-              p.innerHTML = `<strong>${field.label}:</strong> <img src="${field.value}" alt="${field.label}" style="width: 100px;">`;
-            } else {
-              p.innerHTML = `<strong>${field.label}:</strong> ${field.value}`;
+            if(field.idivision){
+              orderElement += "<div>";
             }
-            orderElement.appendChild(p);
+            if (field.img) {
+              orderElement += `<p><strong>${field.label}:</strong> <img src="${field.value}" alt="${field.label}" style="width: 100px;"></p>`;
+            } else {
+              orderElement += `<p><strong>${field.label}:</strong> ${field.value}</p>`;
+            }
+            if(field.division){
+              orderElement += "</div>";
+            }
           });
 
-          orderResultsContainer.appendChild(orderElement);
+          const orderElementNode = document.createElement('div');
+          orderElementNode.innerHTML = orderElement;
+          orderResultsContainer.appendChild(orderElementNode);
         });
         hideSpinner();
       }
@@ -228,28 +232,28 @@
           return;
         }
         salePoContainer.innerHTML = "";
-        finalData.forEach((order) => {
+        finalData.forEach((order, index) => {
           let salePoElement = "<div class='sale-po-item'>";
-          let printElement = "<div id='printElement'>";
+          let printElement = `<div id='printElement${index}' class='printElement'>`;
 
           const fields = [
-            { label: "SUK#", value: order["SUK#"], img: false },
-            { label: "ECT/Wall", value: order["ECT/Wall"], img: false },
-            { label: "L (in)", value: order["L(in)"], img: false },
-            { label: "B (in)", value: order["B(in)"], img: false },
-            { label: "W (in)", value: order["W(in)"], img: false },
-            { label: "Flute", value: order["Flute"], img: false },
-            { label: "Sheet W", value: order["SheetW"], img: false },
-            { label: "Sheet L", value: order["SheetL"], img: false },
-            { label: "Vendor PO#", value: order["VendorPO#"], img: false },
-            { label: "Vendor Name", value: order["VendorName"], img: false },
+            { label: "SUK#", value: order["SUK#"], img: false , division: false, idivision:true},
+            { label: "ECT/Wall", value: order["ECT/Wall"], img: false , division: true, idivision: false},
+            { label: "L (in)", value: order["L(in)"], img: false, division: false, idivision:true },
+            { label: "B (in)", value: order["B(in)"], img: false, division: false, idivision:false },
+            { label: "W (in)", value: order["W(in)"], img: false, division: true, idivision: false },
+            { label: "Flute", value: order["Flute"], img: false, division: false, idivision:true },
+            { label: "Sheet W", value: order["SheetW"], img: false, division: false, idivision:false },
+            { label: "Sheet L", value: order["SheetL"], img: false , division: true, idivision: false},
+            { label: "Vendor PO#", value: order["VendorPO#"], img: false , division: false, idivision:true},
+            { label: "Vendor Name", value: order["VendorName"], img: false , division: false, idivision:false},
             {
               label: "Vendor sheet Arrival Date",
               value: order["VendorsheetArrivalDate"],
-              img: false,
+              img: false, division: true, idivision: false
             },
-            { label: "QR Code", value: order["QRcode"], img: true },
-            { label: "Last Updated", value: order["LastUpdated"], img: false },
+            { label: "QR Code", value: order["QRcode"], img: true, division: false, idivision:true },
+            { label: "Last Updated", value: order["LastUpdated"], img: false, division: true, idivision:false },
           ];
 
           const printFields = [
@@ -260,9 +264,9 @@
             order["ECT/Wall"],
           ];
 
-          window.printImageAndText = function () {
+          window.printImageAndText = function (getId) {
             const printContents =
-              document.getElementById("printElement").innerHTML;
+              document.getElementById(`${getId}`).innerHTML;
             const originalContents = document.body.innerHTML;
 
             document.body.innerHTML = printContents;
@@ -285,18 +289,26 @@
 
           fields.forEach((field) => {
             const p = document.createElement("p");
+            if(field.idivision){
+              salePoElement += "<div>";
+            }
             if (field.img) {
-              salePoElement += `<strong>${field.label}:</strong> <img src="${field.value}" alt="${field.label}" style="width: 100px;">`;
+              salePoElement += `<p><strong>${field.label}:</strong> <img src="${field.value}" alt="${field.label}" style="width: 100px;"></p>`;
             } else {
-              salePoElement += `<strong>${field.label}:</strong> ${field.value}`;
+              salePoElement += `<p><strong>${field.label}:</strong> ${field.value}</p>`;
+            }
+            if(field.division){
+              salePoElement += "</div>";
             }
           });
 
           salePoElement +=
-            "<button onclick='printImageAndText()'>Print</button>";
+            `<button onclick='printImageAndText("printElement${index}")'>Print</button>`;
 
-          document.getElementById("sale-po-print").innerHTML = printElement;
-          salePoContainer.innerHTML = salePoElement;
+          salePoElement += printElement;
+          const salePoNode = document.createElement('div');
+          salePoNode.innerHTML = salePoElement;
+          salePoContainer.appendChild(salePoNode);
         });
         hideSpinner();
       }
@@ -311,58 +323,64 @@
         }
         salePoContainer.innerHTML = "";
         finalData.forEach((order) => {
-          const salePoElement = document.createElement("div");
-          salePoElement.className = "order-item";
+          let salePoElement = "<div class='order-item'>";
 
           const fields = [
-            { label: "SUK#", value: order["SUK#"], img: false },
-            { label: "ECT/Wall", value: order["ECT/Wall"], img: false },
-            { label: "L (in)", value: order["L(in)"], img: false },
-            { label: "B (in)", value: order["B(in)"], img: false },
-            { label: "W (in)", value: order["W(in)"], img: false },
-            { label: "Flute", value: order["Flute"], img: false },
-            { label: "Print N/Y", value: order["PrintN/Y"] },
-            { label: "Expected Qty", value: order["ExpectedQty"] },
-            { label: "Sheet W", value: order["SheetW"], img: false },
-            { label: "Sheet L", value: order["SheetL"], img: false },
-            { label: "Vendor PO#", value: order["VendorPO#"], img: false },
-            { label: "Vendor Name", value: order["VendorName"], img: false },
+            { label: "SUK#", value: order["SUK#"], img: false, division: false, idivision:true },
+            { label: "ECT/Wall", value: order["ECT/Wall"], img: false , division: true, idivision: false},
+            { label: "L (in)", value: order["L(in)"], img: false , division: false, idivision:true},
+            { label: "B (in)", value: order["B(in)"], img: false, division: false, idivision:false },
+            { label: "W (in)", value: order["W(in)"], img: false , division: true, idivision: false},
+            { label: "Flute", value: order["Flute"], img: false , division: false, idivision:true},
+            { label: "Print N/Y", value: order["PrintN/Y"] , img: false, division: false, idivision:false },
+            { label: "Expected Qty", value: order["ExpectedQty"] , img: false , division: true, idivision: false},
+            { label: "Sheet W", value: order["SheetW"], img: false , img: false , division: false, idivision:true},
+            { label: "Sheet L", value: order["SheetL"], img: false , img: false , division: true, idivision:false},
+            { label: "Vendor PO#", value: order["VendorPO#"], img: false, img: false , division: false, idivision:true },
+            { label: "Vendor Name", value: order["VendorName"], img: false , division: false, idivision:false},
             {
               label: "Vendor sheet Arrival Date",
               value: order["VendorsheetArrivalDate"],
-              img: false,
+              img: false, img: false , division: true, idivision:false
             },
-            { label: "Customer", value: order["Customer"], img: false },
-            { label: "Customer PO", value: order["CustomerPO"], img: false },
+            { label: "Customer", value: order["Customer"], img: false , img: false , division: false, idivision:true},
+            { label: "Customer PO", value: order["CustomerPO"], img: false , division: false, idivision:false},
             {
               label: "Customer PO Qty",
               value: order["CustomerPOQty"],
-              img: false,
+              img: false, img: false , division: true, idivision:false
             },
             {
               label: "Delivery Date",
               value: order["DeliveryDate"],
-              img: false,
+              img: false, img: false , division: false, idivision:true
             },
             {
               label: "Total Inventory",
               value: order["TotalInventory"],
-              img: false,
+              img: false, img: false , division: false, idivision:false
             },
-            { label: "Last Updated", value: order["LastUpdated"], img: false },
+            { label: "Last Updated", value: order["LastUpdated"], img: false , division: true, idivision:false },
           ];
 
           fields.forEach((field) => {
             const p = document.createElement("p");
-            if (field.img) {
-              p.innerHTML = `<strong>${field.label}:</strong> <img src="${field.value}" alt="${field.label}" style="width: 100px;">`;
-            } else {
-              p.innerHTML = `<strong>${field.label}:</strong> ${field.value}`;
+            if(field.idivision){
+              salePoElement += "<div>";
             }
-            salePoElement.appendChild(p);
+            if (field.img) {
+              salePoElement += `<p><strong>${field.label}:</strong> <img src="${field.value}" alt="${field.label}" style="width: 100px;"></p>`;
+            } else {
+              salePoElement += `<p><strong>${field.label}:</strong> ${field.value}</p>`;
+            }
+            if(field.division){
+              salePoElement += "</div>";
+            }
           });
 
-          salePoContainer.appendChild(salePoElement);
+          const salePoNode = document.createElement('div');
+          salePoNode.innerHTML = salePoElement;
+          salePoContainer.appendChild(salePoNode);
         });
         hideSpinner();
       }
