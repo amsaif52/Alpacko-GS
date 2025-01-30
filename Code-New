@@ -119,7 +119,8 @@ const searchPrimarySheet = (url) => {
         data[i][columnNumberGetter("shippingCost") - 1],
         data[i][columnNumberGetter("opCost") - 1],
         data[i][columnNumberGetter("qrCodeUrlColumn") - 1], // 37
-        data[i][columnNumberGetter("updatedAtColumn") - 1],
+        data[i][columnNumberGetter("updatedAtColumn") - 1] ? new Date(data[i][columnNumberGetter("updatedAtColumn") - 1]).toLocaleDateString()
+        : "N/A", // 38
         data[i][columnNumberGetter("deliverStatus") - 1],
       ];
     }
@@ -284,7 +285,7 @@ function areAllPropertiesFilled() {
 }
 
 function addTransaction(rowData, newValue) {
-  const id = rowData[2];
+  const id = rowData[0];
   const [_, ...oldValue] = searchPrimarySheet(id);
   const db = new Database("Transaction");
   const updatedAt = new Date();
@@ -305,25 +306,25 @@ function clearSheet(id) {
     skidNumber: "",
     totalNumberBoxes: "",
     damageComments: "",
-    boxLocation:"",
+    sheetLocation:"",
+    skidNumber:"",
     paperCost:"",
     shippingCost:"",
     opCost:"",
     updatedAtColumn: "",
-  });
+    deliverStatus:""
+  },[]);
 }
 
 function shippedTransaction(rowData, newValue) {
-  const id = rowData[2];
+  const id = rowData[0];
   const rowValue = searchPrimarySheet(id);
   const db = new Database("Transaction");
   const updatedAt = new Date();
   db.create(id, JSON.stringify(rowValue), JSON.stringify(newValue), updatedAt);
   const db1 = new Database("Shipped");
-  db1.createCols([rowValue[14],rowValue[15],rowValue[16],rowValue[34],rowValue[35],newValue.damageCommentsInput,newValue.totalNumberBoxesInput,rowValue[30],newValue.totalNumberBoxesInput*newValue.skidInput,updatedAt.toLocaleDateString()]);
-  const db2 = new Database("Cost");
-  db2.createCols([rowValue[14],rowValue[9],rowValue[36]*newValue.recInput,60+(newValue.skidInput - 1)*20,rowValue[37] + rowValue[38] + rowValue[39]* newValue.totalNumberBoxesInput, updatedAt.toLocaleDateString()]);
-
+  db1.createCols([rowValue[0], rowData[1], rowData[2], rowData[3], rowData[4], rowData[5], rowData[7], rowData[8], rowData[9], rowData[10], rowData[13], rowData[19], rowData[20], rowData[21], rowData[22], rowData[23], rowData[24], rowData[26], rowData[27], rowData[28], rowData[29],rowData[39],rowData[40],rowData[41],rowData[43],rowData[44],rowData[45],rowData[47]]);
+  
   clearSheet(id);
   return [id, newValue, new Date(updatedAt)?.toLocaleDateString()];
 }
@@ -392,6 +393,9 @@ function updateCellValueById(id, newValue) {
         .getRange(rowToUpdate, columnNumberGetter("damageComments"))
         .setValue(newValue?.damageCommentsInput);
       sheet
+        .getRange(rowToUpdate, columnNumberGetter("totalInventory"))
+        .setValue(newValue?.totalInventoryInput);
+      sheet
         .getRange(rowToUpdate, columnNumberGetter("boxLocation"))
         .setValue(newValue?.boxLocationInput);
 
@@ -412,7 +416,7 @@ function updateCellValueById(id, newValue) {
   }
 }
 
-function updateCellValueByKey(id, keys) {
+function updateCellValueByKey(id, keys, redBckg) {
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = spreadsheet.getSheetByName(Config.mainSheet);
   const lastRow = sheet.getLastRow();
@@ -429,7 +433,7 @@ function updateCellValueByKey(id, keys) {
         sheet
           .getRange(rowToUpdate, columnNumberGetter(key))
           .setValue(keys[key])
-          .setBackground("#FFFFFF"); 
+          .setBackground(redBckg.includes(key) ? "FF0000": "#FFFFFF"); 
       }
       break;
     }
@@ -484,9 +488,9 @@ function updateInv (rowData,key,key1,newValue) {
   let getDeductedInventory = oldValue[19];
   if (newValue < oldValue[17]) {
     getDeductedInventory += oldValue[17] - newValue;
-    updateCellValueByKey(id,{[key1]:getDeductedInventory});
+    updateCellValueByKey(id,{[key1]:getDeductedInventory},[]);
   }
-  updateCellValueByKey(id,{[key]:newValue});
+  updateCellValueByKey(id,{[key]:newValue},[]);
   return [getDeductedInventory, newValue];
 }
 
@@ -533,12 +537,42 @@ function getFilteredOrders(filterType) {
   return { finalData };
 }
 
-function updateShippedStatus(rowData, newValue) {
+function updateShippedStatus(rowData, newValue, redBckg) {
   const id = rowData[0];
   const [_, ...oldValue] = searchPrimarySheet(id);
   const db = new Database("Transaction");
   const updatedAt = new Date();
   db.create(id, JSON.stringify(oldValue || 0), JSON.stringify(newValue), updatedAt);
-  updateCellValueByKey(id,{deliverStatus:true, ...newValue});
-  return [id, "Shipped", new Date(updatedAt)?.toLocaleDateString()];
+  updateCellValueByKey(id,{deliverStatus:true, ...newValue},redBckg);
+  return [id, "Shipped", newValue, new Date(updatedAt)?.toLocaleDateString()];
+}
+
+function updateInvBySheets(rowData, newValue) {
+  const id = rowData[0];
+  const [_, ...oldValue] = searchPrimarySheet(id);
+  const db = new Database("Transaction");
+  const updatedAt = new Date();
+  db.create(id, JSON.stringify(oldValue || 0), JSON.stringify(newValue), updatedAt);
+  updateCellValueByKey(id,{...newValue},[]);
+  return [id, "Sheets", newValue, new Date(updatedAt)?.toLocaleDateString()];
+}
+
+function updateStatus(rowData, newValue) {
+  const id = rowData[0];
+  const [_, ...oldValue] = searchPrimarySheet(id);
+  const db = new Database("Transaction");
+  const updatedAt = new Date();
+  db.create(id, JSON.stringify(oldValue || 0), JSON.stringify(newValue), updatedAt);
+  updateCellValueByKey(id,{...newValue},[]);
+  return [id, "Status", newValue, new Date(updatedAt)?.toLocaleDateString()];
+}
+
+function updateDamage(rowData, newValue) {
+  const id = rowData[0];
+  const [_, ...oldValue] = searchPrimarySheet(id);
+  const db = new Database("Transaction");
+  const updatedAt = new Date();
+  db.create(id, JSON.stringify(oldValue || 0), JSON.stringify(newValue), updatedAt);
+  updateCellValueByKey(id,{...newValue},[]);
+  return [id, "Damage", newValue, new Date(updatedAt)?.toLocaleDateString()];
 }

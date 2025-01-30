@@ -92,7 +92,7 @@
   input[type="text"],
   input[type="checkbox"],
   textarea {
-    width: 100%;
+    width: 98%;
     margin: 10px auto;
     padding: 10px;
     font-size: 3em;
@@ -105,9 +105,9 @@
   }
 
   #result,
-  #result2 {
-    margin: 20px;
+  #result1 {
     text-align: center;
+    width: 100%;
   }
 
   #tab-navigation button {
@@ -198,7 +198,6 @@
     background-color: #af8751;
     color: #fff;
     height: 70px;
-    width: 200px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -282,5 +281,30 @@
     min-width: 25%;
     padding: 0.5em;
     margin: 0;
+  }
+  .divider{
+    background: #af8751;
+    height: 4px;
+    width: 100%;
+    margin: 40px 0;
+  }
+  button.inputted{
+    width: calc(100% - 300px);
+  }
+  .addSheets{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+  .addSheets input{
+    width: 50%;
+    margin-right: 1em;
+  }
+  .addSheets > div{
+    width: 50%;
+  }
+  #order-print,#sale-po-print{
+    display: none;
   }
 </style>

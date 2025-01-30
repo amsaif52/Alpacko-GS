@@ -21,14 +21,14 @@
         Inventory
       </button>
       <button id="btnTab4" class="tab-button" onclick="showTab('tab4')">
-        Vendor Order
+        Sheet Order
       </button>
     </div>
     <div id="tab1" class="tab-content">
       <div id="qr-reader" style="width: 700px"></div>
       <div id="qr-reader-results"></div>
-      <div id="result" style="margin-top: 20px"></div>
-      <div id="result1" style="margin-top: 20px"></div>
+      <div id="result"></div>
+      <div id="result1"></div>
     </div>
     <div id="tab2" class="tab-content" style="display: none">
       <div id="order-results"></div>
@@ -39,6 +39,7 @@
     </div>
     <div id="tab4" class="tab-content" style="display: none">
       <div id="sale-po-results"></div>
+      <div id="sale-po-print"></div>
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
@@ -110,20 +111,6 @@
           .classList.add("tab-button-active");
       }
 
-      function printImageAndText() {
-        const printContents = document.getElementById("printContent").innerHTML;
-        const originalContents = document.body.innerHTML;
-
-        // Replace the page content with the printable content
-        document.body.innerHTML = printContents;
-
-        // Trigger the print dialog
-        window.print();
-
-        // Restore the original page content
-        document.body.innerHTML = originalContents;
-      }
-
       function populateResults(data) {
         const { finalData } = data;
 
@@ -132,7 +119,7 @@
         finalData.forEach((order) => {
           const orderElement = document.createElement("div");
           orderElement.className = "order-item";
-          const printElement = document.createElement("div");
+          let printElement = "<div id='printElement'>";
 
           const fields = [
             { label: "Vendor PO #", value: order["Vendor PO#"] },
@@ -162,29 +149,21 @@
 
           printFields.forEach((field, index) => {
             if (index === 0) {
-              const img = document.createElement("img");
-              img.src = field;
-              img.style.width = "300px";
-              printElement.appendChild(img);
+              printElement += "<img src='" + field + "' style='width: 300px;'>";
             } else {
-              const p = document.createElement("p");
-              p.innerHTML = `<strong>${fields[index].label}:</strong> ${field}`;
-              printElement.appendChild(p);
+              printElement +=
+                "<p><strong>" +
+                fields[index].label +
+                ":</strong> " +
+                field +
+                "</p>";
             }
           });
 
-          const printButton = document.createElement("button");
-          printButton.innerText = "Print";
-          printButton.onclick = function () {
-            const printContents = printElement.innerHTML;
-            const originalContents = document.body.innerHTML;
+          printElement +=
+            "<button onclick='printImageAndText()'>Print</button>";
 
-            document.body.innerHTML = printContents;
-            window.print();
-            document.body.innerHTML = originalContents;
-          };
-
-          orderElement.appendChild(printButton);
+          orderElement.appendChild(printElement);
 
           orderResultsContainer.appendChild(orderElement);
         });
@@ -215,6 +194,7 @@
             { label: "Flute", value: order["Flute"], img: false },
             { label: "Sheet W", value: order["SheetW"], img: false },
             { label: "Sheet L", value: order["SheetL"], img: false },
+            { label: "Customer", value: order["Customer"], img: false },
             {
               label: "Total Inventory",
               value: order["TotalInventory"],
@@ -243,14 +223,14 @@
         const { finalData } = data;
         const salePoContainer = document.getElementById("sale-po-results");
         if (finalData.length === 0) {
-          salePoContainer.innerHTML = "No Sale PO orders found.";
+          salePoContainer.innerHTML = "No Sheet orders found.";
           hideSpinner();
           return;
         }
         salePoContainer.innerHTML = "";
         finalData.forEach((order) => {
-          const salePoElement = document.createElement("div");
-          salePoElement.className = "sale-po-item";
+          let salePoElement = "<div class='sale-po-item'>";
+          let printElement = "<div id='printElement'>";
 
           const fields = [
             { label: "SUK#", value: order["SUK#"], img: false },
@@ -272,17 +252,51 @@
             { label: "Last Updated", value: order["LastUpdated"], img: false },
           ];
 
+          const printFields = [
+            order["QRcode"],
+            order["Customer"],
+            order["SheetW"],
+            order["SheetL"],
+            order["ECT/Wall"],
+          ];
+
+          window.printImageAndText = function () {
+            const printContents =
+              document.getElementById("printElement").innerHTML;
+            const originalContents = document.body.innerHTML;
+
+            document.body.innerHTML = printContents;
+            window.print();
+            document.body.innerHTML = originalContents;
+          };
+
+          printFields.forEach((field, index) => {
+            if (index === 0) {
+              printElement += "<img src='" + field + "' style='width: 300px;'>";
+            } else {
+              printElement +=
+                "<p><strong>" +
+                fields[index].label +
+                ":</strong> " +
+                field +
+                "</p>";
+            }
+          });
+
           fields.forEach((field) => {
             const p = document.createElement("p");
             if (field.img) {
-              p.innerHTML = `<strong>${field.label}:</strong> <img src="${field.value}" alt="${field.label}" style="width: 100px;">`;
+              salePoElement += `<strong>${field.label}:</strong> <img src="${field.value}" alt="${field.label}" style="width: 100px;">`;
             } else {
-              p.innerHTML = `<strong>${field.label}:</strong> ${field.value}`;
+              salePoElement += `<strong>${field.label}:</strong> ${field.value}`;
             }
-            salePoElement.appendChild(p);
           });
 
-          salePoContainer.appendChild(salePoElement);
+          salePoElement +=
+            "<button onclick='printImageAndText()'>Print</button>";
+
+          document.getElementById("sale-po-print").innerHTML = printElement;
+          salePoContainer.innerHTML = salePoElement;
         });
         hideSpinner();
       }
@@ -407,6 +421,7 @@
       function onQRCodeFound(rowData) {
         hideSpinner();
         if (rowData) {
+          console.log(rowData);
           displayRowData(rowData);
         } else {
           document.getElementById("result").innerHTML =
@@ -441,6 +456,7 @@
             hideSpinner();
           }, 10);
         };
+
         window.handleCheckboxChange = function () {
           var checkbox = document.querySelectorAll("input.checkbox");
           console.log(checkbox);
@@ -455,6 +471,29 @@
 
         window.submitNewValue = function () {
           showSpinner();
+          let invInput = 0;
+
+          if (
+            parseFloat(document.getElementById("processSheetsInput").value) >=
+            parseFloat(rowData[25])
+          ) {
+            invInput =
+              parseFloat(rowData[23] ?? 0, 0) -
+              Math.abs(
+                parseFloat(rowData[25] ?? 0, 0) -
+                  parseFloat(
+                    document.getElementById("processSheetsInput").value ?? 0,
+                    0
+                  )
+              );
+          } else if (
+            parseFloat(document.getElementById("damageInput").value) > 0
+          ) {
+            invInput = parseFloat(rowData[23] ?? 0, 0);
+          } else {
+            invInput = parseFloat(rowData[23] ?? 0, 0);
+          }
+
           var calculatedValue = {
             printCheckInput:
               document.getElementById("printCheckInput").checked ?? false,
@@ -474,7 +513,10 @@
               document.getElementById("damageCommentsInput").value ?? 0,
             boxLocationInput:
               document.getElementById("boxLocationInput").value ?? 0,
+            totalInventoryInput: invInput,
           };
+
+          console.log(calculatedValue, "****");
 
           google.script.run
             .withSuccessHandler(function (updatedRowData) {
@@ -495,7 +537,7 @@
                     .catch((error) => {
                       console.error("Failed to reset QR Code scanner:", error);
                     });
-                }, 5000);
+                }, 1000);
               } else {
                 console.error("Updated data format is incorrect");
               }
@@ -510,8 +552,8 @@
         window.updateDeliver = function () {
           showSpinner();
           if (
-            document.getElementById("recInput").value > 0 &&
-            document.getElementById("etcInput").value.length > 0
+            document.getElementById("recInput").value <= 0 &&
+            document.getElementById("etcInput").value <= 0
           ) {
             alert("Please enter both EC# Confirmation and Rec Qty");
             hideSpinner();
@@ -527,25 +569,254 @@
             hideSpinner();
             return;
           }
+          let redBckg = [];
+          if (
+            rowData[22] &&
+            rowData[1] &&
+            rowData[22].toString() !== rowData[1].toString().match(/\d+/)[0]
+          ) {
+            redBckg.push("etcConfirmation");
+          }
           var calculatedValue = {
-            recQty: document.getElementById("recInput").value ?? 0,
-            etcConfirmation: document.getElementById("etcInput").value ?? 0,
+            recQty:
+              document.getElementById("recInput").value.toString() ===
+              rowData[24].toString()
+                ? rowData[24]
+                : document.getElementById("recInput").value ?? 0,
+            etcConfirmation:
+              document.getElementById("etcInput").value.toString() ===
+              rowData[22].toString()
+                ? rowData[22]
+                : document.getElementById("etcInput").value ?? 0,
+            sheetLocation:
+              document.getElementById("boxLocationInput").value ?? 0,
+            totalInventory:
+              parseFloat(rowData[23] ? rowData[23] : 0, 0) +
+              Math.abs(
+                parseFloat(rowData[24] ? rowData[24] : 0) -
+                  parseFloat(document.getElementById("recInput").value ?? 0, 0)
+              ),
           };
           google.script.run
             .withSuccessHandler(function (updatedRowData) {
               hideSpinner();
-              showUpdate("Delivered!!!");
+              showUpdate("Received!!!");
               setTimeout(function () {
-                document.getElementById("recInput").disabled = true;
-                document.getElementById("etcInput").disabled = true;
+                document.getElementById("recInput").innerText =
+                  updatedRowData[2].recQty;
+                document.getElementById("etcInput").innerText =
+                  updatedRowData[2].etcConfirmation;
+                document.getElementById("currInv").innerText =
+                  updatedRowData[2].totalInventory;
                 hideUpdate();
-              }, 5000);
+              }, 1000);
             })
             .withFailureHandler(function (error) {
               alert("Error in searchSheetForUrl:", error);
               hideSpinner();
             })
-            .updateShippedStatus(rowData, calculatedValue);
+            .updateShippedStatus(rowData, calculatedValue, redBckg);
+        };
+
+        window.updateDamage = function () {
+          showSpinner();
+          var calculatedValue = {
+            damageNumber: document.getElementById("damageInput").value ?? 0,
+            damageComments:
+              document.getElementById("damageCommentsInput").value ?? "",
+            processSheets:
+              document.getElementById("damageInput") &&
+              document.getElementById("damageInput").value &&
+              document.getElementById("damageInput").value > 0
+                ? parseFloat(rowData[25]) -
+                  parseFloat(document.getElementById("damageInput").value)
+                : rowData[25],
+          };
+          console.log(calculatedValue, "****");
+          google.script.run
+            .withSuccessHandler(function (updatedRowData) {
+              hideSpinner();
+              showUpdate("DAMAGE UPDATED!!!");
+              setTimeout(function () {
+                document.getElementById("damageInput").innerText =
+                  updatedRowData[2].damageNumber;
+                document.getElementById("damageCommentsInput").innerText =
+                  updatedRowData[2].damageComments;
+                document.getElementById("processSheetsInput").value =
+                  updatedRowData[2].processSheets;
+                hideUpdate();
+              }, 1000);
+            })
+            .withFailureHandler(function (error) {
+              alert("Error in searchSheetForUrl:", error);
+              hideSpinner();
+            })
+            .updateDamage(rowData, calculatedValue);
+        };
+
+        window.submitInvBySheets = function () {
+          showSpinner();
+          var calculatedValue = {
+            processSheets:
+              document.getElementById("processSheetsInput").value ?? 0,
+            totalInventory:
+              parseFloat(rowData[23] ?? 0, 0) -
+              parseFloat(
+                document.getElementById("processSheetsInput").value ?? 0,
+                0
+              ),
+          };
+          google.script.run
+            .withSuccessHandler(function (updatedRowData) {
+              hideSpinner();
+              showUpdate("INVENTORY UPDATED!!!");
+              if (updatedRowData.length) {
+                setTimeout(function () {
+                  document.getElementById("currInv").innerText =
+                    updatedRowData[2].totalInventory;
+                  document.getElementById("processSheetsInput").value =
+                    updatedRowData[2].processSheetsInput;
+                  hideUpdate();
+                }, 1000);
+              } else {
+                console.error("Updated data format is incorrect");
+              }
+            })
+            .withFailureHandler(function (error) {
+              alert("Error in searchSheetForUrl:", error);
+              hideSpinner();
+            })
+            .updateInvBySheets(rowData, calculatedValue);
+        };
+
+        window.updateInvBySheets = function () {
+          showSpinner();
+          if (
+            parseFloat(rowData[23] ?? 0, 0) <
+            document.getElementById("addSheetsInput").value
+          ) {
+            alert("Cannot add more sheets than the total inventory");
+            hideSpinner();
+            return;
+          }
+          var calculatedValue = {
+            processSheets:
+              parseFloat(
+                document.getElementById("processSheetsInput").value ?? 0,
+                0
+              ) +
+              parseFloat(
+                document.getElementById("addSheetsInput").value ?? 0,
+                0
+              ),
+            totalInventory:
+              parseFloat(rowData[23] ?? 0, 0) -
+              parseFloat(
+                document.getElementById("addSheetsInput").value ?? 0,
+                0
+              ),
+          };
+          console.log(calculatedValue, "****");
+          google.script.run
+            .withSuccessHandler(function (updatedRowData) {
+              hideSpinner();
+              showUpdate("INVENTORY/PROCESS SHEETS UPDATED!!!");
+              if (updatedRowData.length) {
+                console.log(updatedRowData, "****");
+                setTimeout(function () {
+                  document.getElementById("currInv").innerText =
+                    updatedRowData[2].totalInventory;
+                  document.getElementById("processSheetsInput").value =
+                    updatedRowData[2].processSheets;
+                  document.getElementById("addSheetsInput").value = 0;
+                  hideUpdate();
+                }, 1000);
+              } else {
+                console.error("Updated data format is incorrect");
+              }
+            })
+            .withFailureHandler(function (error) {
+              alert("Error in searchSheetForUrl:", error);
+              hideSpinner();
+            })
+            .updateInvBySheets(rowData, calculatedValue);
+        };
+
+        window.removeInvBySheets = function () {
+          showSpinner();
+          if (
+            parseFloat(rowData[25] ?? 0, 0) <
+            document.getElementById("addSheetsInput").value
+          ) {
+            alert("Cannot remove sheets than the process sheets");
+            hideSpinner();
+            return;
+          }
+          var calculatedValue = {
+            processSheets:
+              parseFloat(
+                document.getElementById("processSheetsInput").value ?? 0,
+                0
+              ) -
+              parseFloat(
+                document.getElementById("addSheetsInput").value ?? 0,
+                0
+              ),
+            totalInventory: parseFloat(rowData[23] ?? 0, 0),
+          };
+          google.script.run
+            .withSuccessHandler(function (updatedRowData) {
+              hideSpinner();
+              showUpdate("PROCESS SHEETS REMOVED!!!");
+              if (updatedRowData.length) {
+                setTimeout(function () {
+                  document.getElementById("currInv").innerText =
+                    updatedRowData[2].totalInventory;
+                  document.getElementById("processSheetsInput").value =
+                    updatedRowData[2].processSheetsInput;
+                  document.getElementById("addSheetsInput").value = 0;
+                  hideUpdate();
+                }, 1000);
+              } else {
+                console.error("Updated data format is incorrect");
+              }
+            })
+            .withFailureHandler(function (error) {
+              alert("Error in searchSheetForUrl:", error);
+              hideSpinner();
+            })
+            .updateInvBySheets(rowData, calculatedValue);
+        };
+
+        window.updateStatus = function () {
+          showSpinner();
+          var calculatedValue = {
+            printNumber:
+              document.getElementById("printCheckInput").checked ?? false,
+            cutNumber:
+              document.getElementById("cutCheckInput").checked ?? false,
+            glueNumber:
+              document.getElementById("glueCheckInput").checked ?? false,
+          };
+          google.script.run
+            .withSuccessHandler(function (updatedRowData) {
+              hideSpinner();
+              showUpdate("STATUS UPDATED!!!");
+              setTimeout(function () {
+                document.getElementById("printCheckInput").checked =
+                  updatedRowData[2].printNumber;
+                document.getElementById("cutCheckInput").checked =
+                  updatedRowData[2].cutNumber;
+                document.getElementById("glueCheckInput").checked =
+                  updatedRowData[2].glueNumber;
+                hideUpdate();
+              }, 1000);
+            })
+            .withFailureHandler(function (error) {
+              alert("Error in searchSheetForUrl:", error);
+              hideSpinner();
+            })
+            .updateStatus(rowData, calculatedValue);
         };
 
         window.updateInventory = function () {
@@ -574,7 +845,7 @@
                   document.getElementById("recInput").value = updatedRowData[0];
                   document.getElementById("updateInventoryInput").value = 0;
                   hideUpdate();
-                }, 5000);
+                }, 1000);
               } else {
                 console.error("Updated data format is incorrect");
               }
@@ -594,33 +865,15 @@
         window.submitShipped = function () {
           showSpinner();
           var calculatedValue = {
-            printCheckInput:
-              document.getElementById("printCheckInput").checked ?? false,
-            cutCheckInput:
-              document.getElementById("cutCheckInput").checked ?? false,
-            glueCheckInput:
-              document.getElementById("glueCheckInput").checked ?? false,
-            recInput: document.getElementById("recInput").value ?? 0,
-            etcInput: document.getElementById("etcInput").value ?? 0,
-            damageInput: document.getElementById("damageInput").value ?? 0,
-            skidInput: document.getElementById("skidInput").value ?? 0,
-            totalNumberBoxesInput:
+            skidNumber: document.getElementById("skidInput").value ?? 0,
+            totalNumberBoxes:
               document.getElementById("totalNumberBoxesInput").value ?? 0,
-            processSheetsInput:
-              document.getElementById("processSheetsInput").value ?? 0,
-            damageCommentsInput:
-              document.getElementById("damageCommentsInput").value ?? 0,
-            boxLocationInput:
-              document.getElementById("boxLocationInput").value ?? 0,
           };
           if (
-            calculatedValue.totalNumberBoxesInput &&
-            parseFloat(calculatedValue.totalNumberBoxesInput) <= 0 &&
-            calculatedValue.skidInput &&
-            parseFloat(calculatedValue.skidInput) <= 0
+            !(calculatedValue.totalNumberBoxes && calculatedValue.skidNumber)
           ) {
             alert(
-              "Shipped button is blocked until total number of boxes and skid number are filled!"
+              "Both total number of boxes and skid number should be filled!"
             );
             hideSpinner();
             return;
@@ -645,7 +898,7 @@
                     .catch((error) => {
                       console.error("Failed to reset QR Code scanner:", error);
                     });
-                }, 5000);
+                }, 1000);
               } else {
                 console.error("Updated data format is incorrect");
               }
@@ -708,39 +961,35 @@
           "</div>";
 
         document.getElementById("result").innerHTML = displayText;
-        var displayText1 = `<div class="divider"></div>`;
-        displayText1 += `<div>ECT# Confirmation: <br><input type="text" value="${
-          rowData[22]
-        }" ${rowData[39] ? "disabled" : ""} id="etcInput" ></div>`;
-        displayText1 += `<div>Rec Qty: <br><input type="number" value="${
-          rowData[24]
-        }" ${
-          rowData[39] ? "disabled" : ""
-        } inputmode="numeric" step="1" id="recInput" min="0"></div>`;
-        displayText1 += `<button onclick="updateDeliver()">Delivered</button>`;
+        var displayText1 = `<div>Current Inventory: <br><span id="currInv">${rowData[23]}</span></div>`;
+        displayText1 += `<div>ECT# Confirmation: <br><input type="number" inputmode="numeric" step="1" value="${rowData[22]}" id="etcInput" ></div>`;
+        displayText1 += `<div>Rec Qty: <br><input type="number" value="${rowData[24]}" inputmode="numeric" step="1" id="recInput" min="0"></div>`;
+        displayText1 += `<div>Box Location: <br><input type="text" value="${rowData[33]}" id="boxLocationInput"></div>`;
+        displayText1 += `<button onclick="updateDeliver()" class="inputted">Received</button>`;
         displayText1 += `<div class="divider"></div>`;
-        displayText1 += `<div>Process Sheets: <br><input type="number" value=${rowData[25]} inputmode="numeric" step="1" id="processSheetsInput" min="0"></div>`;
-        displayText1 +=
-          '<div class="checkboxStatus"><div>Print: <input type="checkbox" class="checkbox" id="printCheckInput" ' +
-          (rowData[26] ? "checked" : "") +
-          "></div>";
-        displayText1 +=
-          '<div>Cut: <input type="checkbox" class="checkbox" id="cutCheckInput" ' +
-          (rowData[27] ? "checked" : "") +
-          "></div>";
-        displayText1 +=
-          '<div>Glue: <input type="checkbox" class="checkbox" id="glueCheckInput" ' +
-          (rowData[28] ? "checked" : "") +
-          "></div></div>";
-        displayText1 += `<div>Current Inventory: <br><span id="currInv">${rowData[23]}</span></div>`;
-        displayText1 += `<div>Change Inventory: <br><div><input type="number" inputmode="numeric" step="1" id="updateInventoryInput" min="0"><button onclick="updateInventory()">Update Inventory</button></div></div>`;
-        displayText1 += `<div>Damage: <br><input type="number" value=${rowData[29]} inputmode="numeric" step="1" id="damageInput" min="0"></div>`;
-        displayText1 += `<div>Total Number of Boxes: <br><input type="number" value=${rowData[31]} inputmode="numeric" step="1" id="totalNumberBoxesInput" min="0"></div>`;
-        displayText1 += `<div>Skid#: <br><input type="number" value=${rowData[32]} inputmode="numeric" step="1" id="skidInput" min="0"></div>`;
-        displayText1 += `<div>Box Location: <br><input type="text" value=${rowData[33]} inputmode="numeric" step="1" id="boxLocationInput"></div>`;
+        displayText1 += `<div>Process Sheets: <br><input type="number" value="${rowData[25]}" inputmode="numeric" step="1" id="processSheetsInput" min="0"></div>`;
+        displayText1 += `<div>Add Sheets: <br><div class="addSheets"><input type="number" inputmode="numeric" step="1" id="addSheetsInput" min="0"><div><button onclick="updateInvBySheets()" >Add</button><button onclick="removeInvBySheets()" >Remove</button></div></div></div>`;
+        displayText1 += `<button onclick="submitInvBySheets()" class="inputted">Submit</button>`;
+        displayText1 += `<div class="divider"></div>`;
+        displayText1 += `<div class="checkboxStatus"><div>Print: <input type="checkbox" class="checkbox" id="printCheckInput" ${
+          rowData[26] ? "checked" : ""
+        }></div>`;
+        displayText1 += `<div>Cut: <input type="checkbox" class="checkbox" id="cutCheckInput" ${
+          rowData[27] ? "checked" : ""
+        }></div>`;
+        displayText1 += `<div>Glue: <input type="checkbox" class="checkbox" id="glueCheckInput" ${
+          rowData[28] ? "checked" : ""
+        }></div></div>`;
+        displayText1 += `<button onclick="updateStatus()" class="inputted">Submit</button>`;
+        displayText1 += `<div class="divider"></div>`;
+        displayText1 += `<div>Damage: <br><input type="number" value="${rowData[29]}" inputmode="numeric" step="1" id="damageInput" min="0"></div>`;
         displayText1 += `<div>Damage Comments: <br><textarea id="damageCommentsInput">${rowData[30]}</textarea></div>`;
-
-        displayText1 += `<div class="button-group"><button onclick="submitNewValue()">Submit</button><button onclick="submitShipped()">Shipped</button></div>`;
+        displayText1 += `<button onclick="updateDamage()" class="inputted">Submit</button>`;
+        displayText1 += `<div class="divider"></div>`;
+        displayText1 += `<div>Total Number of Boxes: <br><input type="number" value="${rowData[31]}" inputmode="numeric" step="1" id="totalNumberBoxesInput" min="0"></div>`;
+        displayText1 += `<div>Skid#: <br><input type="number" value="${rowData[32]}" inputmode="numeric" step="1" id="skidInput" min="0"></div>`;
+        displayText1 += `<button onclick="submitShipped()" class="inputted">Shipped</button>`;
+        displayText1 += `</div>`;
 
         document.getElementById("result1").innerHTML = displayText1;
       }
