@@ -671,6 +671,6 @@ function shippedTransaction(suk) {
     }
   }
   const db1 = new Database("Pallet");
-  db1.updateById(suk, columnNumberGetter("shippedStatus"), true);
+  db1.updateById(suk, columnNumberGetter("shippedStatus") - 1, true);
   clearSheet(suk)
 }

@@ -36,8 +36,8 @@ class Database {
     for (let i = 1; i < data.length; i++) {
       if (data[i][0] === id) {
         this.sheet
-          .getRange(index, 1, 1, data[i].length)
-          .setValues([newValue]);
+          .getRange(i + 1, index + 1)
+          .setValue(newValue);
         break;
       }
     }
