@@ -31,6 +31,18 @@ class Database {
     }
   }
 
+  updateById(id,index, newValue) {
+    const data = this.sheet.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][0] === id) {
+        this.sheet
+          .getRange(index, 1, 1, data[i].length)
+          .setValues([newValue]);
+        break;
+      }
+    }
+  }
+
   // Delete a row by ID
   deleteById(id) {
     const data = this.sheet.getDataRange().getValues();

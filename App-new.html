@@ -101,13 +101,13 @@
         document.getElementById(tabId).style.width = "95%";
 
         // Update tab button styles
-        let tabButtons = document.getElementsByClassName("tab-button");
-        for (var i = 0; i < tabButtons.length; i++) {
-          tabButtons[i].classList.remove("tab-button-active");
-        }
-        document
-          .getElementById("btn" + tabId)
-          .classList.add("tab-button-active");
+        // let tabButtons = document.getElementsByClassName("tab-button");
+        // for (var i = 0; i < tabButtons.length; i++) {
+        //   tabButtons[i].classList.remove("tab-button-active");
+        // }
+        // document
+        //   .getElementById("btn" + tabId)
+        //   .classList.add("tab-button-active");
       }
 
       function populateResults(data) {
@@ -183,27 +183,95 @@
           let orderElement = "<div class='inventory-item'>";
 
           const fields = [
-            { label: "SUK#", value: order["SUK#"], img: false, division: false, idivision:true },
-            { label: "ECT/Wall", value: order["ECT/Wall"], img: false , division: true, idivision: false},
-            { label: "L (in)", value: order["L(in)"], img: false , division: false, idivision:true},
-            { label: "B (in)", value: order["B(in)"], img: false , division: false, idivision: false},
-            { label: "W (in)", value: order["W(in)"], img: false , division: true, idivision: false},
-            { label: "Flute", value: order["Flute"], img: false , division: false, idivision:true},
-            { label: "Sheet W", value: order["SheetW"], img: false , division: false, idivision: false},
-            { label: "Sheet L", value: order["SheetL"], img: false , division: false, idivision: false},
-            { label: "Customer", value: order["Customer"], img: false , division: true, idivision: false },
+            {
+              label: "SUK#",
+              value: order["SUK#"],
+              img: false,
+              division: false,
+              idivision: true,
+            },
+            {
+              label: "ECT/Wall",
+              value: order["ECT/Wall"],
+              img: false,
+              division: true,
+              idivision: false,
+            },
+            {
+              label: "L (in)",
+              value: order["L(in)"],
+              img: false,
+              division: false,
+              idivision: true,
+            },
+            {
+              label: "B (in)",
+              value: order["B(in)"],
+              img: false,
+              division: false,
+              idivision: false,
+            },
+            {
+              label: "W (in)",
+              value: order["W(in)"],
+              img: false,
+              division: true,
+              idivision: false,
+            },
+            {
+              label: "Flute",
+              value: order["Flute"],
+              img: false,
+              division: false,
+              idivision: true,
+            },
+            {
+              label: "Sheet W",
+              value: order["SheetW"],
+              img: false,
+              division: false,
+              idivision: false,
+            },
+            {
+              label: "Sheet L",
+              value: order["SheetL"],
+              img: false,
+              division: false,
+              idivision: false,
+            },
+            {
+              label: "Customer",
+              value: order["Customer"],
+              img: false,
+              division: true,
+              idivision: false,
+            },
             {
               label: "Total Inventory",
               value: order["TotalInventory"],
-              img: false, division: false, idivision:true
+              img: false,
+              division: false,
+              idivision: true,
             },
-            { label: "QR Code", value: order["QRcode"], img: true , division: false, idivision: false},
-            { label: "Last Updated", value: order["LastUpdated"], img: false , division: true, idivision: false},
+            {
+              label: "QR Code",
+              value: order["QRcode"],
+              img: true,
+              division: false,
+              idivision: false,
+            },
+            {
+              label: "Last Updated",
+              value: order["LastUpdated"],
+              img: false,
+              division: true,
+              idivision: false,
+            },
           ];
 
           fields.forEach((field) => {
             const p = document.createElement("p");
-            if(field.idivision){
+            if (field.idivision) {
               orderElement += "<div>";
             }
             if (field.img) {
@@ -211,12 +279,12 @@
             } else {
               orderElement += `<p><strong>${field.label}:</strong> ${field.value}</p>`;
             }
-            if(field.division){
+            if (field.division) {
               orderElement += "</div>";
             }
           });
 
-          const orderElementNode = document.createElement('div');
+          const orderElementNode = document.createElement("div");
           orderElementNode.innerHTML = orderElement;
           orderResultsContainer.appendChild(orderElementNode);
         });
@@ -237,23 +305,97 @@
           let printElement = `<div id='printElement${index}' class='printElement'>`;
 
           const fields = [
-            { label: "SUK#", value: order["SUK#"], img: false , division: false, idivision:true},
-            { label: "ECT/Wall", value: order["ECT/Wall"], img: false , division: true, idivision: false},
-            { label: "L (in)", value: order["L(in)"], img: false, division: false, idivision:true },
-            { label: "B (in)", value: order["B(in)"], img: false, division: false, idivision:false },
-            { label: "W (in)", value: order["W(in)"], img: false, division: true, idivision: false },
-            { label: "Flute", value: order["Flute"], img: false, division: false, idivision:true },
-            { label: "Sheet W", value: order["SheetW"], img: false, division: false, idivision:false },
-            { label: "Sheet L", value: order["SheetL"], img: false , division: true, idivision: false},
-            { label: "Vendor PO#", value: order["VendorPO#"], img: false , division: false, idivision:true},
-            { label: "Vendor Name", value: order["VendorName"], img: false , division: false, idivision:false},
+            {
+              label: "SUK#",
+              value: order["SUK#"],
+              img: false,
+              division: false,
+              idivision: true,
+            },
+            {
+              label: "ECT/Wall",
+              value: order["ECT/Wall"],
+              img: false,
+              division: true,
+              idivision: false,
+            },
+            {
+              label: "L (in)",
+              value: order["L(in)"],
+              img: false,
+              division: false,
+              idivision: true,
+            },
+            {
+              label: "B (in)",
+              value: order["B(in)"],
+              img: false,
+              division: false,
+              idivision: false,
+            },
+            {
+              label: "W (in)",
+              value: order["W(in)"],
+              img: false,
+              division: true,
+              idivision: false,
+            },
+            {
+              label: "Flute",
+              value: order["Flute"],
+              img: false,
+              division: false,
+              idivision: true,
+            },
+            {
+              label: "Sheet W",
+              value: order["SheetW"],
+              img: false,
+              division: false,
+              idivision: false,
+            },
+            {
+              label: "Sheet L",
+              value: order["SheetL"],
+              img: false,
+              division: true,
+              idivision: false,
+            },
+            {
+              label: "Vendor PO#",
+              value: order["VendorPO#"],
+              img: false,
+              division: false,
+              idivision: true,
+            },
+            {
+              label: "Vendor Name",
+              value: order["VendorName"],
+              img: false,
+              division: false,
+              idivision: false,
+            },
             {
               label: "Vendor sheet Arrival Date",
               value: order["VendorsheetArrivalDate"],
-              img: false, division: true, idivision: false
+              img: false,
+              division: true,
+              idivision: false,
             },
-            { label: "QR Code", value: order["QRcode"], img: true, division: false, idivision:true },
-            { label: "Last Updated", value: order["LastUpdated"], img: false, division: true, idivision:false },
+            {
+              label: "QR Code",
+              value: order["QRcode"],
+              img: true,
+              division: false,
+              idivision: true,
+            },
+            {
+              label: "Last Updated",
+              value: order["LastUpdated"],
+              img: false,
+              division: true,
+              idivision: false,
+            },
           ];
 
           const printFields = [
@@ -265,13 +407,15 @@
           ];
 
           window.printImageAndText = function (getId) {
-            const printContents =
-              document.getElementById(`${getId}`).innerHTML;
-            const originalContents = document.body.innerHTML;
-
-            document.body.innerHTML = printContents;
-            window.print();
-            document.body.innerHTML = originalContents;
+            const printContents = document.getElementById(getId).innerHTML;
+            const printWindow = window.open("", "_blank");
+            printWindow.document.write(
+              "<html><head><title>Print</title></head><body>" +
+                printContents +
+                "</body></html>"
+            );
+            printWindow.document.close();
+            printWindow.print();
           };
 
           printFields.forEach((field, index) => {
@@ -289,7 +433,7 @@
 
           fields.forEach((field) => {
             const p = document.createElement("p");
-            if(field.idivision){
+            if (field.idivision) {
               salePoElement += "<div>";
             }
             if (field.img) {
@@ -297,16 +441,15 @@
             } else {
               salePoElement += `<p><strong>${field.label}:</strong> ${field.value}</p>`;
             }
-            if(field.division){
+            if (field.division) {
               salePoElement += "</div>";
             }
           });
 
-          salePoElement +=
-            `<button onclick='printImageAndText("printElement${index}")'>Print</button>`;
+          salePoElement += `<button onclick='printImageAndText("printElement${index}")'>Print</button>`;
 
           salePoElement += printElement;
-          const salePoNode = document.createElement('div');
+          const salePoNode = document.createElement("div");
           salePoNode.innerHTML = salePoElement;
           salePoContainer.appendChild(salePoNode);
         });
@@ -326,59 +469,265 @@
           let salePoElement = "<div class='order-item'>";
 
           const fields = [
-            { label: "SUK#", value: order["SUK#"], img: false, division: false, idivision:true },
-            { label: "ECT/Wall", value: order["ECT/Wall"], img: false , division: true, idivision: false},
-            { label: "L (in)", value: order["L(in)"], img: false , division: false, idivision:true},
-            { label: "B (in)", value: order["B(in)"], img: false, division: false, idivision:false },
-            { label: "W (in)", value: order["W(in)"], img: false , division: true, idivision: false},
-            { label: "Flute", value: order["Flute"], img: false , division: false, idivision:true},
-            { label: "Print N/Y", value: order["PrintN/Y"] , img: false, division: false, idivision:false },
-            { label: "Expected Qty", value: order["ExpectedQty"] , img: false , division: true, idivision: false},
-            { label: "Sheet W", value: order["SheetW"], img: false , img: false , division: false, idivision:true},
-            { label: "Sheet L", value: order["SheetL"], img: false , img: false , division: true, idivision:false},
-            { label: "Vendor PO#", value: order["VendorPO#"], img: false, img: false , division: false, idivision:true },
-            { label: "Vendor Name", value: order["VendorName"], img: false , division: false, idivision:false},
+            {
+              label: "SUK#",
+              value: order["SUK#"],
+              img: false,
+              division: false,
+              idivision: true,
+            },
+            {
+              label: "ECT/Wall",
+              value: order["ECT/Wall"],
+              img: false,
+              division: true,
+              idivision: false,
+            },
+            {
+              label: "L (in)",
+              value: order["L(in)"],
+              img: false,
+              division: false,
+              idivision: true,
+            },
+            {
+              label: "B (in)",
+              value: order["B(in)"],
+              img: false,
+              division: false,
+              idivision: false,
+            },
+            {
+              label: "W (in)",
+              value: order["W(in)"],
+              img: false,
+              division: true,
+              idivision: false,
+            },
+            {
+              label: "Flute",
+              value: order["Flute"],
+              img: false,
+              division: false,
+              idivision: true,
+            },
+            {
+              label: "Print N/Y",
+              value: order["PrintN/Y"],
+              img: false,
+              division: false,
+              idivision: false,
+            },
+            {
+              label: "Expected Qty",
+              value: order["ExpectedQty"],
+              img: false,
+              division: true,
+              idivision: false,
+            },
+            {
+              label: "Sheet W",
+              value: order["SheetW"],
+              img: false,
+              img: false,
+              division: false,
+              idivision: true,
+            },
+            {
+              label: "Sheet L",
+              value: order["SheetL"],
+              img: false,
+              division: true,
+              idivision: false,
+            },
+            {
+              label: "Vendor PO#",
+              value: order["VendorPO#"],
+              img: false,
+              division: false,
+              idivision: true,
+            },
+            {
+              label: "Vendor Name",
+              value: order["VendorName"],
+              img: false,
+              division: false,
+              idivision: false,
+            },
             {
               label: "Vendor sheet Arrival Date",
               value: order["VendorsheetArrivalDate"],
-              img: false, img: false , division: true, idivision:false
+              img: false,
+              division: true,
+              idivision: false,
             },
-            { label: "Customer", value: order["Customer"], img: false , img: false , division: false, idivision:true},
-            { label: "Customer PO", value: order["CustomerPO"], img: false , division: false, idivision:false},
+            {
+              label: "Customer",
+              value: order["Customer"],
+              img: false,
+              division: false,
+              idivision: true,
+            },
+            {
+              label: "Customer PO",
+              value: order["CustomerPO"],
+              img: false,
+              division: false,
+              idivision: false,
+            },
             {
               label: "Customer PO Qty",
               value: order["CustomerPOQty"],
-              img: false, img: false , division: true, idivision:false
+              img: false,
+              division: true,
+              idivision: false,
             },
+            {
+              label: "Print",
+              value: order["Print"],
+              img: false,
+              division: false,
+              idivision: true,
+              type: "bool",
+            },
+            {
+              label: "Cut",
+              value: order["Cut"],
+              img: false,
+              division: false,
+              idivision: false,
+              type: "bool",
+            },
+            {
+              label: "Glue",
+              value: order["Glue"],
+              img: false,
+              division: true,
+              idivision: false,
+              type: "bool",
+            },
+            ...(order["PalletStatus"]
+              ? [
+                  {
+                    label: "Total Number of Boxes",
+                    value: order["TotalNumberofBoxes"],
+                    img: false,
+                    division: false,
+                    idivision: true,
+                  },
+                ]
+              : []),
+            ...(order["PalletStatus"]
+              ? [
+                  {
+                    label: "Skid #",
+                    value: order["Skid#"],
+                    img: false,
+                    division: true,
+                    idivision: false,
+                  },
+                ]
+              : []),
             {
               label: "Delivery Date",
               value: order["DeliveryDate"],
-              img: false, img: false , division: false, idivision:true
+              img: false,
+              img: false,
+              division: false,
+              idivision: true,
             },
             {
               label: "Total Inventory",
               value: order["TotalInventory"],
-              img: false, img: false , division: false, idivision:false
+              img: false,
+              img: false,
+              division: false,
+              idivision: false,
             },
-            { label: "Last Updated", value: order["LastUpdated"], img: false , division: true, idivision:false },
+            {
+              label: "Last Updated",
+              value: order["LastUpdated"],
+              img: false,
+              division: true,
+              idivision: false,
+            },
+            { button: true },
           ];
+          window.shippedTransaction = function (suk) {
+            showSpinner();
+            google.script.run
+              .withSuccessHandler(function (updatedRowData) {
+                hideSpinner();
+                showUpdate("Shipped");
+                setTimeout(function () {
+                  hideUpdate();
+                  document.getElementById("result").innerText = "";
+                  document.getElementById("result1").innerText = "";
+                  lastResult = null;
+                  html5QrcodeScanner
+                    .clear()
+                    .then(() => {
+                      console.log("QR Code scanner reset successfully.");
+                      html5QrcodeScanner.render(onScanSuccess);
+                    })
+                    .catch((error) => {
+                      console.error("Failed to reset QR Code scanner:", error);
+                    });
+                }, 1000);
+              })
+              .withFailureHandler(function (error) {
+                alert("Error in searchSheetForUrl:", error);
+                hideSpinner();
+              })
+              .shippedTransaction(suk);
+          };
+          window.updateOrderTransaction = function (suk) {
+            google.script.run
+              .withSuccessHandler(function (data) {
+                onQRCodeFound(data);
+                showTab("tab1");
+              })
+              .withFailureHandler(function (error) {
+                hideSpinner();
+                alert("Error in searchSheetForUrl: " + error.message);
+              })
+              .searchPrimarySheet(`${suk}`);
+          };
 
           fields.forEach((field) => {
-            const p = document.createElement("p");
-            if(field.idivision){
+            if (field.button) {
+              salePoElement += `<button ${
+                order["PalletStatus"].toString().toLowerCase() !== "true"
+                  ? "disabled"
+                  : ""
+              } onclick='shippedTransaction("${
+                order["SUK#"]
+              }")'>Shipped</button><button onclick='updateOrderTransaction("${
+                order["SUK#"]
+              }")'>Go To Order</button>`;
+            }
+            if (field.idivision) {
               salePoElement += "<div>";
             }
             if (field.img) {
               salePoElement += `<p><strong>${field.label}:</strong> <img src="${field.value}" alt="${field.label}" style="width: 100px;"></p>`;
-            } else {
-              salePoElement += `<p><strong>${field.label}:</strong> ${field.value}</p>`;
+            } else if (!field.button) {
+              if (field.type === "bool") {
+                salePoElement += `<p><strong>${field.label}:</strong> ${
+                  field.value || false
+                }</p>`;
+              } else {
+                salePoElement += `<p><strong>${field.label}:</strong> ${
+                  field.value || ""
+                }</p>`;
+              }
             }
-            if(field.division){
+            if (field.division) {
               salePoElement += "</div>";
             }
           });
 
-          const salePoNode = document.createElement('div');
+          const salePoNode = document.createElement("div");
           salePoNode.innerHTML = salePoElement;
           salePoContainer.appendChild(salePoNode);
         });
@@ -487,86 +836,6 @@
           }
         };
 
-        window.submitNewValue = function () {
-          showSpinner();
-          let invInput = 0;
-
-          if (
-            parseFloat(document.getElementById("processSheetsInput").value) >=
-            parseFloat(rowData[25])
-          ) {
-            invInput =
-              parseFloat(rowData[23] ?? 0, 0) -
-              Math.abs(
-                parseFloat(rowData[25] ?? 0, 0) -
-                  parseFloat(
-                    document.getElementById("processSheetsInput").value ?? 0,
-                    0
-                  )
-              );
-          } else if (
-            parseFloat(document.getElementById("damageInput").value) > 0
-          ) {
-            invInput = parseFloat(rowData[23] ?? 0, 0);
-          } else {
-            invInput = parseFloat(rowData[23] ?? 0, 0);
-          }
-
-          var calculatedValue = {
-            printCheckInput:
-              document.getElementById("printCheckInput").checked ?? false,
-            cutCheckInput:
-              document.getElementById("cutCheckInput").checked ?? false,
-            glueCheckInput:
-              document.getElementById("glueCheckInput").checked ?? false,
-            recInput: document.getElementById("recInput").value ?? 0,
-            etcInput: document.getElementById("etcInput").value ?? 0,
-            damageInput: document.getElementById("damageInput").value ?? 0,
-            skidInput: document.getElementById("skidInput").value ?? 0,
-            totalNumberBoxesInput:
-              document.getElementById("totalNumberBoxesInput").value ?? 0,
-            processSheetsInput:
-              document.getElementById("processSheetsInput").value ?? 0,
-            damageCommentsInput:
-              document.getElementById("damageCommentsInput").value ?? 0,
-            boxLocationInput:
-              document.getElementById("boxLocationInput").value ?? 0,
-            totalInventoryInput: invInput,
-          };
-
-          console.log(calculatedValue, "****");
-
-          google.script.run
-            .withSuccessHandler(function (updatedRowData) {
-              hideSpinner();
-              showUpdate("UPDATED!!!");
-              if (updatedRowData.length) {
-                setTimeout(function () {
-                  hideUpdate();
-                  document.getElementById("result").innerHTML = "";
-                  document.getElementById("result1").innerHTML = "";
-                  lastResult = null;
-                  html5QrcodeScanner
-                    .clear()
-                    .then(() => {
-                      console.log("QR Code scanner reset successfully.");
-                      html5QrcodeScanner.render(onScanSuccess);
-                    })
-                    .catch((error) => {
-                      console.error("Failed to reset QR Code scanner:", error);
-                    });
-                }, 1000);
-              } else {
-                console.error("Updated data format is incorrect");
-              }
-            })
-            .withFailureHandler(function (error) {
-              alert("Error in searchSheetForUrl:", error);
-              hideSpinner();
-            })
-            .addTransaction(rowData, calculatedValue);
-        };
-
         window.updateDeliver = function () {
           showSpinner();
           if (
@@ -577,21 +846,22 @@
             hideSpinner();
             return;
           }
-          if (
-            document.getElementById("recInput").value.toString() ===
-              rowData[24].toString() &&
-            document.getElementById("etcInput").value.toString() ===
-              rowData[22].toString()
-          ) {
-            alert("Rec Qty or ECT# Confirmatiion are already updated");
-            hideSpinner();
-            return;
-          }
+          // if (
+          //   document.getElementById("recInput").value.toString() ===
+          //     rowData[24].toString() &&
+          //   document.getElementById("etcInput").value.toString() ===
+          //     rowData[22].toString()
+          // ) {
+          //   alert("Rec Qty or ECT# Confirmatiion are already updated");
+          //   hideSpinner();
+          //   return;
+          // }
           let redBckg = [];
           if (
-            rowData[22] &&
+            document.getElementById("etcInput").value &&
             rowData[1] &&
-            rowData[22].toString() !== rowData[1].toString().match(/\d+/)[0]
+            document.getElementById("etcInput").value.toString() !==
+              rowData[1].toString().match(/\d+/)[0]
           ) {
             redBckg.push("etcConfirmation");
           }
@@ -600,20 +870,23 @@
               document.getElementById("recInput").value.toString() ===
               rowData[24].toString()
                 ? rowData[24]
-                : document.getElementById("recInput").value ?? 0,
+                : document.getElementById("recInput").value || 0,
             etcConfirmation:
               document.getElementById("etcInput").value.toString() ===
               rowData[22].toString()
                 ? rowData[22]
-                : document.getElementById("etcInput").value ?? 0,
+                : document.getElementById("etcInput").value || 0,
             sheetLocation:
-              document.getElementById("boxLocationInput").value ?? 0,
+              document.getElementById("boxLocationInput").value || 0,
             totalInventory:
               parseFloat(rowData[23] ? rowData[23] : 0, 0) +
               Math.abs(
                 parseFloat(rowData[24] ? rowData[24] : 0) -
-                  parseFloat(document.getElementById("recInput").value ?? 0, 0)
+                  parseFloat(document.getElementById("recInput").value || 0, 0)
               ),
+            expectedQty:
+              parseFloat(rowData[7] ? rowData[7] : 0, 0) -
+              parseFloat(document.getElementById("recInput").value || 0, 0),
           };
           google.script.run
             .withSuccessHandler(function (updatedRowData) {
@@ -626,6 +899,8 @@
                   updatedRowData[2].etcConfirmation;
                 document.getElementById("currInv").innerText =
                   updatedRowData[2].totalInventory;
+                document.getElementById("expQty").innerText =
+                  updatedRowData[2].expectedQty;
                 hideUpdate();
               }, 1000);
             })
@@ -638,17 +913,18 @@
 
         window.updateDamage = function () {
           showSpinner();
+          console.log(rowData, "****");
           var calculatedValue = {
-            damageNumber: document.getElementById("damageInput").value ?? 0,
+            damageNumber: parseFloat(
+              document.getElementById("damageInput").value ?? 0
+            ),
             damageComments:
               document.getElementById("damageCommentsInput").value ?? "",
             processSheets:
-              document.getElementById("damageInput") &&
-              document.getElementById("damageInput").value &&
-              document.getElementById("damageInput").value > 0
-                ? parseFloat(rowData[25]) -
-                  parseFloat(document.getElementById("damageInput").value)
-                : rowData[25],
+              parseFloat(
+                document.getElementById("processSheetsInput").value ?? 0,
+                0
+              ) - parseFloat(document.getElementById("damageInput").value),
           };
           console.log(calculatedValue, "****");
           google.script.run
@@ -674,26 +950,38 @@
 
         window.submitInvBySheets = function () {
           showSpinner();
+          if (
+            parseFloat(document.getElementById("currInv").innerText || 0) <
+            parseFloat(document.getElementById("processSheetsInput").value || 0)
+          ) {
+            alert("Cannot process more sheets than the total inventory");
+            hideSpinner();
+            return;
+          }
           var calculatedValue = {
-            processSheets:
-              document.getElementById("processSheetsInput").value ?? 0,
+            processSheets: parseFloat(
+              document.getElementById("processSheetsInput").value || 0,
+              0
+            ),
             totalInventory:
-              parseFloat(rowData[23] ?? 0, 0) -
+              parseFloat(document.getElementById("currInv").innerText || 0) -
               parseFloat(
-                document.getElementById("processSheetsInput").value ?? 0,
+                document.getElementById("processSheetsInput").value || 0,
                 0
               ),
           };
+          console.log(calculatedValue, "****");
           google.script.run
             .withSuccessHandler(function (updatedRowData) {
               hideSpinner();
               showUpdate("INVENTORY UPDATED!!!");
+              console.log(updatedRowData);
               if (updatedRowData.length) {
                 setTimeout(function () {
                   document.getElementById("currInv").innerText =
                     updatedRowData[2].totalInventory;
                   document.getElementById("processSheetsInput").value =
-                    updatedRowData[2].processSheetsInput;
+                    updatedRowData[2].processSheets;
                   hideUpdate();
                 }, 1000);
               } else {
@@ -710,8 +998,8 @@
         window.updateInvBySheets = function () {
           showSpinner();
           if (
-            parseFloat(rowData[23] ?? 0, 0) <
-            document.getElementById("addSheetsInput").value
+            parseFloat(document.getElementById("currInv").innerText || 0) <
+            parseFloat(document.getElementById("addSheetsInput").value)
           ) {
             alert("Cannot add more sheets than the total inventory");
             hideSpinner();
@@ -728,7 +1016,7 @@
                 0
               ),
             totalInventory:
-              parseFloat(rowData[23] ?? 0, 0) -
+              parseFloat(document.getElementById("currInv").innerText || 0) -
               parseFloat(
                 document.getElementById("addSheetsInput").value ?? 0,
                 0
@@ -763,10 +1051,11 @@
         window.removeInvBySheets = function () {
           showSpinner();
           if (
-            parseFloat(rowData[25] ?? 0, 0) <
-            document.getElementById("addSheetsInput").value
+            parseFloat(
+              document.getElementById("processSheetsInput").value || 0
+            ) < parseFloat(document.getElementById("addSheetsInput").value)
           ) {
-            alert("Cannot remove sheets than the process sheets");
+            alert("Cannot remove more sheets than the process sheets");
             hideSpinner();
             return;
           }
@@ -780,7 +1069,12 @@
                 document.getElementById("addSheetsInput").value ?? 0,
                 0
               ),
-            totalInventory: parseFloat(rowData[23] ?? 0, 0),
+            totalInventory:
+              parseFloat(document.getElementById("currInv").innerText || 0) +
+              parseFloat(
+                document.getElementById("addSheetsInput").value ?? 0,
+                0
+              ),
           };
           google.script.run
             .withSuccessHandler(function (updatedRowData) {
@@ -791,7 +1085,7 @@
                   document.getElementById("currInv").innerText =
                     updatedRowData[2].totalInventory;
                   document.getElementById("processSheetsInput").value =
-                    updatedRowData[2].processSheetsInput;
+                    updatedRowData[2].processSheets;
                   document.getElementById("addSheetsInput").value = 0;
                   hideUpdate();
                 }, 1000);
@@ -880,12 +1174,12 @@
             );
         };
 
-        window.submitShipped = function () {
+        window.submitPallet = function () {
           showSpinner();
           var calculatedValue = {
             skidNumber: document.getElementById("skidInput").value ?? 0,
             totalNumberBoxes:
-              document.getElementById("totalNumberBoxesInput").value ?? 0,
+              document.getElementById("totalNumberBoxesInput").value ?? 0
           };
           if (
             !(calculatedValue.totalNumberBoxes && calculatedValue.skidNumber)
@@ -900,22 +1194,14 @@
           google.script.run
             .withSuccessHandler(function (updatedRowData) {
               hideSpinner();
-              showUpdate("Shipped");
+              showUpdate("Palletized!!!");
               if (updatedRowData.length) {
                 setTimeout(function () {
                   hideUpdate();
-                  document.getElementById("result").innerHTML = "";
-                  document.getElementById("result1").innerHTML = "";
-                  lastResult = null;
-                  html5QrcodeScanner
-                    .clear()
-                    .then(() => {
-                      console.log("QR Code scanner reset successfully.");
-                      html5QrcodeScanner.render(onScanSuccess);
-                    })
-                    .catch((error) => {
-                      console.error("Failed to reset QR Code scanner:", error);
-                    });
+                  document.getElementById("skidInput").value =
+                    calculatedValue.skidNumber;
+                  document.getElementById("totalNumberBoxesInput").value =
+                    calculatedValue.totalNumberBoxes;
                 }, 1000);
               } else {
                 console.error("Updated data format is incorrect");
@@ -925,7 +1211,7 @@
               alert("Error in searchSheetForUrl:", error);
               hideSpinner();
             })
-            .shippedTransaction(rowData, calculatedValue);
+            .palletTransaction(rowData, calculatedValue);
         };
 
         var value = rowData[1];
@@ -953,7 +1239,7 @@
           "</div></div>" +
           '<div class="info-row"><div class="info-label">Print:</div><div>' +
           rowData[6] +
-          '</div><div class="info-label">Expected Qty:</div><div>' +
+          '</div><div class="info-label">Expected Qty:</div><div id="expQty">' +
           rowData[7] +
           "</div></div>" +
           '<div class="info-row"><div class="info-label">Arrival Date:</div><div>' +
@@ -1006,7 +1292,7 @@
         displayText1 += `<div class="divider"></div>`;
         displayText1 += `<div>Total Number of Boxes: <br><input type="number" value="${rowData[31]}" inputmode="numeric" step="1" id="totalNumberBoxesInput" min="0"></div>`;
         displayText1 += `<div>Skid#: <br><input type="number" value="${rowData[32]}" inputmode="numeric" step="1" id="skidInput" min="0"></div>`;
-        displayText1 += `<button onclick="submitShipped()" class="inputted">Shipped</button>`;
+        displayText1 += `<button onclick="submitPallet()" class="inputted">Palletized</button>`;
         displayText1 += `</div>`;
 
         document.getElementById("result1").innerHTML = displayText1;

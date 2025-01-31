@@ -59,6 +59,8 @@ function initialSetup() {
     qrCodeUrlColumn: "au",
     updatedAtColumn: "av",
     deliverStatus: "aw",
+    palletStatus: "ax",
+    shippedStatus: "ay",
   });
 }
 
@@ -72,7 +74,7 @@ function initialSetup() {
  */
 const searchPrimarySheet = (url) => {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
-    Config.mainSheet,
+    Config.mainSheet
   );
   const data = sheet.getDataRange().getValues();
   const columnIndex = columnNumberGetter("skuId") - 1;
@@ -96,13 +98,19 @@ const searchPrimarySheet = (url) => {
         data[i][columnNumberGetter("totalCostOHPF") - 1],
         data[i][columnNumberGetter("vendorPO") - 1], //15
         data[i][columnNumberGetter("vendorName") - 1],
-        data[i][columnNumberGetter("vendorsheetArrivalDate") - 1] ? new Date(data[i][columnNumberGetter("vendorsheetArrivalDate") - 1]).toLocaleDateString()
-        : "N/A",
+        data[i][columnNumberGetter("vendorsheetArrivalDate") - 1]
+          ? new Date(
+              data[i][columnNumberGetter("vendorsheetArrivalDate") - 1]
+            ).toLocaleDateString()
+          : "N/A",
         data[i][columnNumberGetter("customer") - 1],
         data[i][columnNumberGetter("customerPO") - 1],
         data[i][columnNumberGetter("customerPOQty") - 1],
-        data[i][columnNumberGetter("deliveryDate") - 1] ? new Date(data[i][columnNumberGetter("deliveryDate") - 1]).toLocaleDateString()
-        : "N/A", // 21
+        data[i][columnNumberGetter("deliveryDate") - 1]
+          ? new Date(
+              data[i][columnNumberGetter("deliveryDate") - 1]
+            ).toLocaleDateString()
+          : "N/A", // 21
         data[i][columnNumberGetter("etcConfirmation") - 1], //22
         data[i][columnNumberGetter("totalInventory") - 1], // 23
         data[i][columnNumberGetter("recQty") - 1], // 24
@@ -119,8 +127,11 @@ const searchPrimarySheet = (url) => {
         data[i][columnNumberGetter("shippingCost") - 1],
         data[i][columnNumberGetter("opCost") - 1],
         data[i][columnNumberGetter("qrCodeUrlColumn") - 1], // 37
-        data[i][columnNumberGetter("updatedAtColumn") - 1] ? new Date(data[i][columnNumberGetter("updatedAtColumn") - 1]).toLocaleDateString()
-        : "N/A", // 38
+        data[i][columnNumberGetter("updatedAtColumn") - 1]
+          ? new Date(
+              data[i][columnNumberGetter("updatedAtColumn") - 1]
+            ).toLocaleDateString()
+          : "N/A", // 38
         data[i][columnNumberGetter("deliverStatus") - 1],
       ];
     }
@@ -145,14 +156,15 @@ function columnLetterToIndex(letter) {
   const uppercaseLetter = letter.toUpperCase();
   const length = uppercaseLetter.length;
   for (let i = 0; i < length; i++) {
-    column += (uppercaseLetter.charCodeAt(i) - 64) * Math.pow(26, length - i - 1);
+    column +=
+      (uppercaseLetter.charCodeAt(i) - 64) * Math.pow(26, length - i - 1);
   }
   return column;
 }
 
 function checkDuplicates() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
-    Config.mainSheet,
+    Config.mainSheet
   );
   const columnLetter = columnScriptPropertyGetter("skuId");
   const column = sheet
@@ -236,13 +248,13 @@ function createQrCodes() {
 
   if (!areAllPropertiesFilled()) {
     SpreadsheetApp.getUi().alert(
-      "Operation halted due to incomplete configuration.",
+      "Operation halted due to incomplete configuration."
     );
     return;
   }
 
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
-    Config.mainSheet,
+    Config.mainSheet
   );
   const lastRow = sheet.getLastRow();
   const idValues = sheet
@@ -260,7 +272,9 @@ function createQrCodes() {
       const qrCode = generateQRCode(code);
       const row = i + 1;
       sheet.getRange(row + 1, columnNumberGetter("skuId")).setValue(code);
-      sheet.getRange(row + 1, columnNumberGetter("qrCodeUrlColumn")).setValue(qrCode);
+      sheet
+        .getRange(row + 1, columnNumberGetter("qrCodeUrlColumn"))
+        .setValue(qrCode);
     }
   }
 }
@@ -268,13 +282,9 @@ function createQrCodes() {
 function areAllPropertiesFilled() {
   const scriptProperties = PropertiesService.getScriptProperties();
   const properties = scriptProperties.getProperties();
-  const requiredProperties = [
-    "vendorPoColumn",
-    "vendorName",
-    "skuId"
-  ];
+  const requiredProperties = ["vendorPoColumn", "vendorName", "skuId"];
   const allFilled = requiredProperties.every(
-    (prop) => properties[prop] && properties[prop].trim() !== "",
+    (prop) => properties[prop] && properties[prop].trim() !== ""
   );
   const ui = SpreadsheetApp.getUi();
   if (allFilled) {
@@ -289,43 +299,62 @@ function addTransaction(rowData, newValue) {
   const [_, ...oldValue] = searchPrimarySheet(id);
   const db = new Database("Transaction");
   const updatedAt = new Date();
-  db.create(id, JSON.stringify(oldValue || 0), JSON.stringify(newValue), updatedAt);
+  db.create(
+    id,
+    JSON.stringify(oldValue || 0),
+    JSON.stringify(newValue),
+    updatedAt
+  );
   updateCellValueById(id, newValue);
   return [id, newValue, new Date(updatedAt)?.toLocaleDateString()];
 }
 
 function clearSheet(id) {
-  updateCellValueByKey(id, {
-    etcConfirmation: "",
-    recQty: "",
-    processSheets: "",
-    cutNumber: "",
-    printNumber: "",
-    glueNumber: "",
-    damageNumber: "",
-    skidNumber: "",
-    totalNumberBoxes: "",
-    damageComments: "",
-    sheetLocation:"",
-    skidNumber:"",
-    paperCost:"",
-    shippingCost:"",
-    opCost:"",
-    updatedAtColumn: "",
-    deliverStatus:""
-  },[]);
+  updateCellValueByKey(
+    id,
+    {
+      etcConfirmation: "",
+      recQty: "",
+      processSheets: "",
+      cutNumber: "",
+      printNumber: "",
+      glueNumber: "",
+      damageNumber: "",
+      skidNumber: "",
+      totalNumberBoxes: "",
+      damageComments: "",
+      sheetLocation: "",
+      skidNumber: "",
+      paperCost: "",
+      shippingCost: "",
+      opCost: "",
+      updatedAtColumn: "",
+      deliverStatus: "",
+    },
+    []
+  );
 }
 
-function shippedTransaction(rowData, newValue) {
+function palletTransaction(rowData, newValue) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
+    Config.mainSheet
+  );
   const id = rowData[0];
   const rowValue = searchPrimarySheet(id);
+  const [headers, ...rows] = sheet.getDataRange().getValues();
+  Logger.log(rows)
+  let palletRow = rows.find((row) => row[0] === id);
+  palletRow[40]=newValue?.totalNumberBoxes
+  palletRow[41]=newValue?.skidNumber
+  palletRow[49]=true
+  Logger.log(palletRow)
   const db = new Database("Transaction");
   const updatedAt = new Date();
   db.create(id, JSON.stringify(rowValue), JSON.stringify(newValue), updatedAt);
-  const db1 = new Database("Shipped");
-  db1.createCols([rowValue[0], rowData[1], rowData[2], rowData[3], rowData[4], rowData[5], rowData[7], rowData[8], rowData[9], rowData[10], rowData[13], rowData[19], rowData[20], rowData[21], rowData[22], rowData[23], rowData[24], rowData[26], rowData[27], rowData[28], rowData[29],rowData[39],rowData[40],rowData[41],rowData[43],rowData[44],rowData[45],rowData[47]]);
-  
-  clearSheet(id);
+  const db1 = new Database("Pallet");
+  db1.createCols(palletRow);
+  updateCellValueByKey(id, { ...newValue }, []);
+  clearSheet(id)
   return [id, newValue, new Date(updatedAt)?.toLocaleDateString()];
 }
 
@@ -358,13 +387,28 @@ function updateCellValueById(id, newValue) {
   for (let i = 1; i < columnValues.length; i++) {
     if (columnValues[i][0] === id) {
       const rowToUpdate = i + 1;
-      const findEtcConfirmationData = parseFloat(data[i][columnNumberGetter("etcNum") - 1] || 0,0);
-      const findSheetCost = parseFloat(data[i][columnNumberGetter("sheetCost") - 1] || 0,0);
-      const findPrintingCost = parseFloat(data[i][columnNumberGetter("overHead") - 1] || 0,0) + parseFloat(data[i][columnNumberGetter("profit") - 1] || 0,0) + parseFloat((data[i][columnNumberGetter("printCost") - 1] || 0) * newValue?.totalNumberBoxesInput,0);
+      const findEtcConfirmationData = parseFloat(
+        data[i][columnNumberGetter("etcNum") - 1] || 0,
+        0
+      );
+      const findSheetCost = parseFloat(
+        data[i][columnNumberGetter("sheetCost") - 1] || 0,
+        0
+      );
+      const findPrintingCost =
+        parseFloat(data[i][columnNumberGetter("overHead") - 1] || 0, 0) +
+        parseFloat(data[i][columnNumberGetter("profit") - 1] || 0, 0) +
+        parseFloat(
+          (data[i][columnNumberGetter("printCost") - 1] || 0) *
+            newValue?.totalNumberBoxesInput,
+          0
+        );
       sheet
         .getRange(rowToUpdate, columnNumberGetter("etcConfirmation"))
         .setValue(newValue?.etcInput)
-        .setBackground(findEtcConfirmationData !== newValue?.etcInput ? "#FF0000" : ""); 
+        .setBackground(
+          findEtcConfirmationData !== newValue?.etcInput ? "#FF0000" : ""
+        );
       sheet
         .getRange(rowToUpdate, columnNumberGetter("recQty"))
         .setValue(newValue?.recInput);
@@ -399,13 +443,13 @@ function updateCellValueById(id, newValue) {
         .getRange(rowToUpdate, columnNumberGetter("boxLocation"))
         .setValue(newValue?.boxLocationInput);
 
-        sheet
+      sheet
         .getRange(rowToUpdate, columnNumberGetter("paperCost"))
         .setValue(findSheetCost * newValue?.recInput);
-        sheet
+      sheet
         .getRange(rowToUpdate, columnNumberGetter("shippingCost"))
         .setValue(60 + (newValue?.skidInput - 1) * 20);
-        sheet
+      sheet
         .getRange(rowToUpdate, columnNumberGetter("opCost"))
         .setValue(findPrintingCost);
       sheet
@@ -427,13 +471,13 @@ function updateCellValueByKey(id, keys, redBckg) {
   for (let i = 1; i < columnValues.length; i++) {
     if (columnValues[i][0] === id) {
       const rowToUpdate = i + 1;
-      for(let k = 0; k < Object.keys(keys).length; k++){
+      for (let k = 0; k < Object.keys(keys).length; k++) {
         const key = Object.keys(keys)[k];
         Logger.log(key, keys[key]);
         sheet
           .getRange(rowToUpdate, columnNumberGetter(key))
           .setValue(keys[key])
-          .setBackground(redBckg.includes(key) ? "FF0000": "#FFFFFF"); 
+          .setBackground(redBckg.includes(key) ? "FF0000" : "#FFFFFF");
       }
       break;
     }
@@ -479,18 +523,23 @@ function getOrders() {
   return { finalData };
 }
 
-function updateInv (rowData,key,key1,newValue) {
+function updateInv(rowData, key, key1, newValue) {
   const id = rowData[2];
   const [_, ...oldValue] = searchPrimarySheet(id);
   const db = new Database("Transaction");
   const updatedAt = new Date();
-  db.create(id, JSON.stringify(oldValue || 0), JSON.stringify(newValue), updatedAt);
+  db.create(
+    id,
+    JSON.stringify(oldValue || 0),
+    JSON.stringify(newValue),
+    updatedAt
+  );
   let getDeductedInventory = oldValue[19];
   if (newValue < oldValue[17]) {
     getDeductedInventory += oldValue[17] - newValue;
-    updateCellValueByKey(id,{[key1]:getDeductedInventory},[]);
+    updateCellValueByKey(id, { [key1]: getDeductedInventory }, []);
   }
-  updateCellValueByKey(id,{[key]:newValue},[]);
+  updateCellValueByKey(id, { [key]: newValue }, []);
   return [getDeductedInventory, newValue];
 }
 
@@ -498,15 +547,26 @@ function getFilteredOrders(filterType) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
     Config.mainSheet
   );
+  const sheet1 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
+    "Pallet"
+  );
 
   const [headers, ...rows] = sheet.getDataRange().getValues();
-  let sortedHeaders = headers.map(head => head.replace(/\s/g, '').trim());
+  const [_, ...rows1] = sheet1.getDataRange().getValues();
+  let sortedHeaders = headers.map((head) => head.replace(/\s/g, "").trim());
 
+  let rowData = [...rows,...rows1]
+  Logger.log(rowData)
   // Convert data to a format suitable for serialization, respecting sortedHeaders
-  const finalData = rows
+  const finalData = rowData
     .map((row) => {
       return sortedHeaders.reduce((obj, header, index) => {
-        let value = row[headers.findIndex(head => head.replace(/\s/g, '').trim() === header)];
+        let value =
+          row[
+            headers.findIndex(
+              (head) => head.replace(/\s/g, "").trim() === header
+            )
+          ];
         // Use the original headers array to match column data
         // Check for Date objects and convert them to a string
         if (value instanceof Date) {
@@ -520,17 +580,18 @@ function getFilteredOrders(filterType) {
         obj[header] = value;
         return obj;
       }, {});
-    }).filter(val => {
+    })
+    .filter((val) => {
       if (filterType === "orders") {
-        return val["DeliverStatus"].toString().toLowerCase() !== "true";
+        return val["DeliverStatus"].toString().toLowerCase() !== "true" && val["ShippedStatus"].toString().toLowerCase() !== 'true';
       } else if (filterType === "inventory") {
-        return val["TotalInventory"] > 0;
+        return val["TotalInventory"] > 0 && val["ShippedStatus"].toString().toLowerCase() !== 'true';
       } else if (filterType === "salePO") {
         const deliveryDate = new Date(val["DeliveryDate"]);
         const today = new Date();
         deliveryDate.setHours(0, 0, 0, 0);
         today.setHours(0, 0, 0, 0);
-        return deliveryDate >= today;
+        return deliveryDate >= today && val["ShippedStatus"].toString().toLowerCase() !== 'true';
       }
       return true;
     });
@@ -542,8 +603,13 @@ function updateShippedStatus(rowData, newValue, redBckg) {
   const [_, ...oldValue] = searchPrimarySheet(id);
   const db = new Database("Transaction");
   const updatedAt = new Date();
-  db.create(id, JSON.stringify(oldValue || 0), JSON.stringify(newValue), updatedAt);
-  updateCellValueByKey(id,{deliverStatus:true, ...newValue},redBckg);
+  db.create(
+    id,
+    JSON.stringify(oldValue || 0),
+    JSON.stringify(newValue),
+    updatedAt
+  );
+  updateCellValueByKey(id, { deliverStatus: true, ...newValue }, redBckg);
   return [id, "Shipped", newValue, new Date(updatedAt)?.toLocaleDateString()];
 }
 
@@ -552,8 +618,13 @@ function updateInvBySheets(rowData, newValue) {
   const [_, ...oldValue] = searchPrimarySheet(id);
   const db = new Database("Transaction");
   const updatedAt = new Date();
-  db.create(id, JSON.stringify(oldValue || 0), JSON.stringify(newValue), updatedAt);
-  updateCellValueByKey(id,{...newValue},[]);
+  db.create(
+    id,
+    JSON.stringify(oldValue || 0),
+    JSON.stringify(newValue),
+    updatedAt
+  );
+  updateCellValueByKey(id, { ...newValue }, []);
   return [id, "Sheets", newValue, new Date(updatedAt)?.toLocaleDateString()];
 }
 
@@ -562,8 +633,13 @@ function updateStatus(rowData, newValue) {
   const [_, ...oldValue] = searchPrimarySheet(id);
   const db = new Database("Transaction");
   const updatedAt = new Date();
-  db.create(id, JSON.stringify(oldValue || 0), JSON.stringify(newValue), updatedAt);
-  updateCellValueByKey(id,{...newValue},[]);
+  db.create(
+    id,
+    JSON.stringify(oldValue || 0),
+    JSON.stringify(newValue),
+    updatedAt
+  );
+  updateCellValueByKey(id, { ...newValue }, []);
   return [id, "Status", newValue, new Date(updatedAt)?.toLocaleDateString()];
 }
 
@@ -572,7 +648,29 @@ function updateDamage(rowData, newValue) {
   const [_, ...oldValue] = searchPrimarySheet(id);
   const db = new Database("Transaction");
   const updatedAt = new Date();
-  db.create(id, JSON.stringify(oldValue || 0), JSON.stringify(newValue), updatedAt);
-  updateCellValueByKey(id,{...newValue},[]);
+  db.create(
+    id,
+    JSON.stringify(oldValue || 0),
+    JSON.stringify(newValue),
+    updatedAt
+  );
+  updateCellValueByKey(id, { ...newValue }, []);
   return [id, "Damage", newValue, new Date(updatedAt)?.toLocaleDateString()];
+}
+
+function shippedTransaction(suk) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
+    "Pallet"
+  );
+  const db = new Database("Shipped");
+  const data = sheet.getDataRange().getValues();
+  const columnIndex = columnNumberGetter("skuId") - 1;
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][columnIndex] === suk) {
+      db.createCols(data[i]);
+    }
+  }
+  const db1 = new Database("Pallet");
+  db1.updateById(suk, columnNumberGetter("shippedStatus"), true);
+  clearSheet(suk)
 }
