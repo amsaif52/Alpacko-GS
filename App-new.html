@@ -148,10 +148,13 @@
 
           printFields.forEach((field, index) => {
             if (index === 0) {
-              printElement += "<img src='" + field + "' style='width: 300px;'>";
+              printElement +=
+                "<img src='" +
+                field +
+                "' style='width: 300px;margin: 0 auto;display:block'>";
             } else {
               printElement +=
-                "<p><strong>" +
+                "<p style='text-align: center;font-size: 50px;'><strong>" +
                 fields[index].label +
                 ":</strong> " +
                 field +
@@ -313,10 +316,13 @@
 
           printFields.forEach((field, index) => {
             if (index === 0) {
-              printElement += "<img src='" + field + "' style='width: 300px;'>";
+              printElement +=
+                "<img src='" +
+                field +
+                "' style='width: 300px;margin: 0 auto;display:block'>";
             } else {
               printElement +=
-                "<p><strong>" +
+                "<p style='text-align: center;font-size: 50px;'><strong>" +
                 fields[index].label +
                 ":</strong> " +
                 field +
@@ -495,10 +501,13 @@
 
           printFields.forEach((field, index) => {
             if (index === 0) {
-              printElement += "<img src='" + field + "' style='width: 300px;'>";
+              printElement +=
+                "<img src='" +
+                field +
+                "' style='width: 300px;margin: 0 auto;display:block'>";
             } else {
               printElement +=
-                "<p><strong>" +
+                "<p style='text-align: center;font-size: 50px;'><strong>" +
                 fields[index].label +
                 ":</strong> " +
                 field +
@@ -754,10 +763,13 @@
 
           printFields.forEach((field, index) => {
             if (index === 0) {
-              printElement += "<img src='" + field + "' style='width: 300px;'>";
+              printElement +=
+                "<img src='" +
+                field +
+                "' style='width: 300px;margin: 0 auto;display:block'>";
             } else {
               printElement +=
-                "<p><strong>" +
+                "<p style='text-align: center;font-size: 50px;'><strong>" +
                 fields[index].label +
                 ":</strong> " +
                 field +
@@ -772,7 +784,7 @@
                 showUpdate("Shipped");
                 setTimeout(function () {
                   hideUpdate();
-                  document.getElementById("order-results").innerText = ''
+                  document.getElementById("order-results").innerText = "";
                   document.getElementById("btnTab2").click();
                 }, 1000);
               })
