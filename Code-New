@@ -330,6 +330,9 @@ function clearSheet(id) {
       opCost: "",
       updatedAtColumn: "",
       deliverStatus: "",
+      palletStatus: "",
+      shippedStatus: "",
+      deliveryDate: "",
     },
     []
   );
@@ -342,19 +345,19 @@ function palletTransaction(rowData, newValue) {
   const id = rowData[0];
   const rowValue = searchPrimarySheet(id);
   const [headers, ...rows] = sheet.getDataRange().getValues();
-  Logger.log(rows)
+  Logger.log(rows);
   let palletRow = rows.find((row) => row[0] === id);
-  palletRow[40]=newValue?.totalNumberBoxes
-  palletRow[41]=newValue?.skidNumber
-  palletRow[49]=true
-  Logger.log(palletRow)
+  palletRow[40] = newValue?.totalNumberBoxes;
+  palletRow[41] = newValue?.skidNumber;
+  palletRow[49] = true;
+  Logger.log(palletRow);
   const db = new Database("Transaction");
   const updatedAt = new Date();
   db.create(id, JSON.stringify(rowValue), JSON.stringify(newValue), updatedAt);
   const db1 = new Database("Pallet");
   db1.createCols(palletRow);
   updateCellValueByKey(id, { ...newValue }, []);
-  clearSheet(id)
+  clearSheet(id);
   return [id, newValue, new Date(updatedAt)?.toLocaleDateString()];
 }
 
@@ -547,16 +550,35 @@ function getFilteredOrders(filterType) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
     Config.mainSheet
   );
-  const sheet1 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
-    "Pallet"
-  );
+  const sheet1 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Pallet");
 
   const [headers, ...rows] = sheet.getDataRange().getValues();
   const [_, ...rows1] = sheet1.getDataRange().getValues();
   let sortedHeaders = headers.map((head) => head.replace(/\s/g, "").trim());
 
-  let rowData = [...rows,...rows1]
-  Logger.log(rowData)
+  let skus = [];
+  const getUniqueData = rows1
+    .map((r, i) => {
+      if (r[50].toString().toLowerCase() !== "true") {
+        skus.push(r[0]);
+        return r;
+      }
+    })
+    .filter((x) => x);
+
+  Logger.log(getUniqueData);
+
+  let rowData = [...rows].map((row) => {
+    let indice = skus.indexOf(row[0]);
+    Logger.log(indice);
+    if (indice > -1) {
+      return getUniqueData[indice];
+    } else {
+      return row;
+    }
+  });
+
+  Logger.log(rowData);
   // Convert data to a format suitable for serialization, respecting sortedHeaders
   const finalData = rowData
     .map((row) => {
@@ -583,15 +605,24 @@ function getFilteredOrders(filterType) {
     })
     .filter((val) => {
       if (filterType === "orders") {
-        return val["DeliverStatus"].toString().toLowerCase() !== "true" && val["ShippedStatus"].toString().toLowerCase() !== 'true';
+        return (
+          val["DeliverStatus"].toString().toLowerCase() !== "true" &&
+          val["ShippedStatus"].toString().toLowerCase() !== "true"
+        );
       } else if (filterType === "inventory") {
-        return val["TotalInventory"] > 0 && val["ShippedStatus"].toString().toLowerCase() !== 'true';
+        return (
+          val["TotalInventory"] > 0 &&
+          val["ShippedStatus"].toString().toLowerCase() !== "true"
+        );
       } else if (filterType === "salePO") {
         const deliveryDate = new Date(val["DeliveryDate"]);
         const today = new Date();
         deliveryDate.setHours(0, 0, 0, 0);
         today.setHours(0, 0, 0, 0);
-        return deliveryDate >= today && val["ShippedStatus"].toString().toLowerCase() !== 'true';
+        return (
+          deliveryDate >= today &&
+          val["ShippedStatus"].toString().toLowerCase() !== "true"
+        );
       }
       return true;
     });
@@ -659,18 +690,23 @@ function updateDamage(rowData, newValue) {
 }
 
 function shippedTransaction(suk) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
-    "Pallet"
-  );
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Pallet");
   const db = new Database("Shipped");
   const data = sheet.getDataRange().getValues();
   const columnIndex = columnNumberGetter("skuId") - 1;
   for (let i = 1; i < data.length; i++) {
-    if (data[i][columnIndex] === suk) {
-      db.createCols(data[i]);
+    if (
+      data[i][columnIndex] === suk &&
+      data[i][columnNumberGetter("shippedStatus") - 1] !== true
+    ) {
+      let tempData = data[i];
+      tempData[columnNumberGetter("updatedAtColumn") - 1] =
+        new Date().toLocaleDateString();
+      Logger.log(tempData);
+      db.createCols(tempData);
     }
   }
   const db1 = new Database("Pallet");
+  Logger.log(columnNumberGetter("shippedStatus") - 1);
   db1.updateById(suk, columnNumberGetter("shippedStatus") - 1, true);
-  clearSheet(suk)
 }

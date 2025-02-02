@@ -9,7 +9,7 @@ class Database {
     this.sheet.appendRow([id, oldValue, value, date]);
   }
 
-  createCols(val){
+  createCols(val) {
     this.sheet.appendRow(val);
   }
 
@@ -31,13 +31,15 @@ class Database {
     }
   }
 
-  updateById(id,index, newValue) {
+  updateById(id, index, newValue) {
     const data = this.sheet.getDataRange().getValues();
     for (let i = 1; i < data.length; i++) {
-      if (data[i][0] === id) {
-        this.sheet
-          .getRange(i + 1, index + 1)
-          .setValue(newValue);
+      Logger.log(data[i][50]);
+      if (
+        data[i][0] === id &&
+        data[i][50].toString().toUpperCase() !== "TRUE"
+      ) {
+        this.sheet.getRange(i + 1, index + 1).setValue(newValue);
         break;
       }
     }
@@ -66,7 +68,7 @@ class Database {
             data[i][1],
             new Date(data[i][2])?.toString(),
             data[i][3],
-            data[i][4]
+            data[i][4],
           ];
         }
       }
