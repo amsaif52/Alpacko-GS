@@ -282,7 +282,7 @@ function createQrCodes() {
 function areAllPropertiesFilled() {
   const scriptProperties = PropertiesService.getScriptProperties();
   const properties = scriptProperties.getProperties();
-  const requiredProperties = ["vendorPoColumn", "vendorName", "skuId"];
+  const requiredProperties = ["skuId"];
   const allFilled = requiredProperties.every(
     (prop) => properties[prop] && properties[prop].trim() !== ""
   );
@@ -580,7 +580,7 @@ function getFilteredOrders(filterType) {
 
   Logger.log(rowData);
   // Convert data to a format suitable for serialization, respecting sortedHeaders
-  const finalData = rowData
+  let finalData = rowData
     .map((row) => {
       return sortedHeaders.reduce((obj, header, index) => {
         let value =
@@ -607,7 +607,8 @@ function getFilteredOrders(filterType) {
       if (filterType === "orders") {
         return (
           val["DeliverStatus"].toString().toLowerCase() !== "true" &&
-          val["ShippedStatus"].toString().toLowerCase() !== "true"
+          val["ShippedStatus"].toString().toLowerCase() !== "true" &&
+          val["VendorsheetArrivalDate"].toString().length > 0
         );
       } else if (filterType === "inventory") {
         return (
@@ -624,8 +625,14 @@ function getFilteredOrders(filterType) {
           val["ShippedStatus"].toString().toLowerCase() !== "true"
         );
       }
-      return true;
+      return false;
     });
+
+    if (filterType === "salePO") {
+      finalData = finalData.sort((a, b) => {
+        return new Date(a["DeliveryDate"]) - new Date(b["DeliveryDate"]);
+      });
+    }
   return { finalData };
 }
 

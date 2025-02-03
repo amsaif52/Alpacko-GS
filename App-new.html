@@ -74,6 +74,47 @@
         }
       }
 
+      function emailShow(rowData, calculatedValue) {
+        const emailBody =
+          "Customer PO: " +
+          rowData[18] +
+          "\n" +
+          "Customer PO QTY: " +
+          rowData[20] +
+          "\n" +
+          "Customer Name: " +
+          rowData[19] +
+          "\n" +
+          "Sku ID: " +
+          rowData[0] +
+          "\n" +
+          "Length: " +
+          rowData[2] +
+          "\n" +
+          "Width: " +
+          rowData[4] +
+          "\n" +
+          "Breadth: " +
+          rowData[3] +
+          "\n" +
+          "Total Number of Boxes: " +
+          calculatedValue.totalNumberBoxes +
+          "\n" +
+          "Skid Number: " +
+          calculatedValue.skidNumber;
+        const mailtoLink =
+          "mailto:sales@alpacko.com?subject=" +
+          encodeURIComponent(rowData[18] + "-" + rowData[19] + "-" + new Date()) +
+          "&body=" +
+          encodeURIComponent(emailBody);
+        const emailButton = document.createElement("button");
+        emailButton.innerText = "Send Email";
+        emailButton.onclick = function () {
+          window.location.href = mailtoLink;
+        };
+        document.getElementById("result1").appendChild(emailButton);
+      }
+
       function showSpinner() {
         document.getElementById("overlay").style.display = "flex";
       }
@@ -1316,26 +1357,11 @@
               if (updatedRowData.length) {
                 setTimeout(function () {
                   hideUpdate();
+                  emailShow(rowData, calculatedValue);
                   document.getElementById("skidInput").value =
                     calculatedValue.skidNumber;
                   document.getElementById("totalNumberBoxesInput").value =
                     calculatedValue.totalNumberBoxes;
-                  const emailBody = `
-                  Customer PO: ${rowData[18]}
-                  Customer PO QTY: ${rowData[20]}
-                  Customer Name: ${rowData[19]}
-                  Sku ID: ${rowData[0]}
-                  Length: ${rowData[2]}
-                  Width: ${rowData[4]}
-                  Breadth: ${rowData[3]}
-                  Total Number of Boxes: ${calculatedValue.totalNumberBoxes}
-                  Skid Number: ${calculatedValue.skidNumber}
-                  `;
-                  window.location.href = `mailto:sales@alpacko.com?subject=${
-                    rowData[18]
-                  }-${rowData[19]}-${
-                    updatedRowData[2]
-                  }&body=${encodeURIComponent(emailBody)}`;
                 }, 1000);
               } else {
                 console.error("Updated data format is incorrect");
